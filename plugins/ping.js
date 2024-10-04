@@ -1,18 +1,6 @@
-/*
-██╗  ██╗ ██████╗ ████████╗ █████╗ ██████╗  ██████╗       ███╗   ███╗██████╗ 
-██║  ██║██╔═══██╗╚══██╔══╝██╔══██╗██╔══██╗██╔═══██╗      ████╗ ████║██╔══██╗
-███████║██║   ██║   ██║   ███████║██████╔╝██║   ██║█████╗██╔████╔██║██║  ██║
-██╔══██║██║   ██║   ██║   ██╔══██║██╔══██╗██║   ██║╚════╝██║╚██╔╝██║██║  ██║
-██║  ██║╚██████╔╝   ██║   ██║  ██║██║  ██║╚██████╔╝      ██║ ╚═╝ ██║██████╔╝
-╚═╝  ╚═╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝       ╚═╝     ╚═╝╚═════╝
- By : Taira Makino
- Github : https://github.com/anonphoenix007
- WhatsApp : https://wa.me/2347080968564
-*/                                                                                                                                                    
+const { command ,isPrivate} = require("../lib/");
 
 
-const { fromBuffer, mimeTypes } = require("file-type");
-const { command, isPrivate } = require("../lib/");
 
 command(
   {
@@ -23,9 +11,10 @@ command(
   },
   async (message, match) => {
     const start = new Date().getTime();
-    const { key } = await message.sendMessage(message.jid, { text: "```☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬\n  Pinging!```" });
+    await message.sendMessage("```Ping!```");
     const end = new Date().getTime();
-    return await message.sendMessage(message.jid, { text: "*ʟᴀᴛᴇɴᴄʏ:* " + (end - start) + " *ms*", edit: key });
+    return await message.sendMessage(
+      "*Pong!*\n ```" + (end - start) + "``` *ms*"
+    );
   }
 );
-
