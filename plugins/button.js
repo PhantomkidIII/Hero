@@ -1,4 +1,3 @@
-
 const { command, formatp, isPrivate, clockString, pm2Uptime } = require("../lib");
 const config = require("../config");
 const process = require("process");
@@ -76,15 +75,16 @@ command(
         }
     ];
 
-    // Send the image with caption and buttons
+    // Step 1: Use the method to send an image with caption and buttons
+    let content = "https://wallpaperaccess.com/full/5531321.jpg"; // Image URL
     const buttonMessage = {
-        image: { url: "https://i.imgur.com/Y0pLkKX.jpeg" }, // Image URL
         caption: heder, // The menu as the caption
         footer: "By : Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
         buttons: buttons,
         headerType: 4 // Header type 4 includes the image as the header
     };
     
-    await message.sendMessage(message.jid, buttonMessage);
+    // Send the image with the buttons and caption
+    await message.sendMessage(message.jid, content, buttonMessage, "image");
   }
 );
