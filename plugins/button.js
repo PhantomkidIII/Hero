@@ -48,60 +48,42 @@ command(
 ╰════════════════ ⪨
 `;
 
-    // Step 1: Send the image separately
-    await message.sendMessage(
-      message.jid, 
-      { image: { url: "https://i.imgur.com/Y0pLkKX.jpeg" }, caption: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ By Tᴀɪʀᴀ Mᴀᴋɪɴᴏ" }
-    );
+    // Prepare buttons
+    const buttons = [
+        {
+            buttonId: `${prefix}list`, // Dynamic prefix for the button ID
+            buttonText: { displayText: "MENU 📃" },
+            type: 1,
+        },
+        {
+            buttonId: `${prefix}repo`, // Button for Repo
+            buttonText: { displayText: "Repo" },
+            type: 1,
+            url: "https://github.com/anonphoenix007/HOTARO-MD"
+        },
+        {
+            buttonId: `${prefix}channel`, // Button for Channel
+            buttonText: { displayText: "Channel" },
+            type: 1,
+            url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K"
+        },
+        {
+            buttonId: `${prefix}author`, // Button for Author
+            buttonText: { displayText: "Author" },
+            type: 1,
+            url: "https://wa.me/2347080968564"
+        }
+    ];
 
-    // Step 2: Send the button menu
-    let data = {
-      jid: message.jid,
-      button: [
-        {
-          type: "reply",
-          params: {
-            display_text: "MENU 📃",
-            id: `${prefix}menu`, // Dynamic prefix for the button ID
-          },
-        },
-        {
-          type: "url",
-          params: {
-            display_text: "Repo",
-            url: "https://github.com/anonphoenix007/HOTARO-MD",
-            merchant_url: "https://github.com/anonphoenix007/HOTARO-MD",
-          },
-        },
-        {
-          type: "url",
-          params: {
-            display_text: "Channel",
-            url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K",
-            merchant_url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K",
-          },
-        },
-        {
-          type: "url",
-          params: {
-            display_text: "Author",
-            url: "https://wa.me/2347080968564",
-            merchant_url: "https://wa.me/2347080968564",
-          },
-        },
-      ],
-      header: {
-        title: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
-        subtitle: "ʜᴏᴛᴀʀᴏ-ᴍᴅ By Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
-      },
-      footer: {
-        text: "By : Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
-      },
-      body: {
-        text: heder,
-      },
+    // Send the image with caption and buttons
+    const buttonMessage = {
+        image: { url: "https://i.imgur.com/Y0pLkKX.jpeg" }, // Image URL
+        caption: heder, // The menu as the caption
+        footer: "By : Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
+        buttons: buttons,
+        headerType: 4 // Header type 4 includes the image as the header
     };
     
-    return await message.sendMessage(message.jid, data, {}, "interactive");
+    await message.sendMessage(message.jid, buttonMessage);
   }
 );
