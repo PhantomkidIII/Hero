@@ -1,10 +1,11 @@
-const { command, formatp, isPrivate, clockString, pm2Uptime } = require("../lib"); 
+const { command, formatp, isPrivate, clockString, pm2Uptime } = require("../lib");
 const config = require("../config");
-const process = require("process")
+const process = require("process");
 const { OWNER_NAME, BOT_NAME } = require("../config");
 const { hostname } = require("os");
 const plugins = require("../lib/plugins");
 const os = require("os");
+
 function runtime(seconds) {
     seconds = Number(seconds);
     var d = Math.floor(seconds / (3600 * 24));
@@ -18,117 +19,23 @@ function runtime(seconds) {
     return dDisplay + hDisplay + mDisplay + sDisplay;
 }
 
-
-/*command(
-  {
-    pattern: "menu",
-    fromMe: isPrivate,
-    desc: "send command list.",
-    usage: "menu",
-    type: "user",
-  },
-  async (message, match, m) => {
-    let heder = `
-╭════════════════ ⪩
-┃  〘 *☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬* 〙
-╰════════════════ ⪨
-╭════════════════ ⪩
-┃   *Oᴡɴᴇʀ : ${OWNER_NAME}
-┃   *Time  : ${time}*
-┃   *Dᴀᴛᴇ : ${date}*
-┃   *Oᴡɴᴇʀ : ${global.OwnerName}*
-┃   *Pʟᴜɢɪɴꜱ : ${plugins.commands.length}*
-┃   *Pʀᴇꜰɪx : ${prefix}*
-┃   *Rᴜɴᴛɪᴍᴇ : ${runtime(process.uptime())}*
-╰════════════════ ⪨
-  By : Tᴀɪʀᴀ Mᴀᴋɪɴᴏ
-`;
-    let data = {
-      jid: message.jid,
-      button: [
-        {
-          type: "list",
-          params: {
-            title: "Menu 📃",
-            sections: [
-              {
-                title: "Menu 📃",
-                rows: [
-                  {
-                    header: heder,
-                    title: "Menu 📃",
-                    description: "Command list",
-                    id: "/menu",
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        {
-          type: "reply",
-          params: {
-            display_text: "Menu 📃",
-            id: "/menu",
-          },
-        },
-        {
-          type: "url",
-          params: {
-            display_text: "Repo",
-            url: "https://github.com/anonphoenix007/HOTARO-MD",
-            merchant_url: "https://github.com/anonphoenix007/HOTARO-MD",
-          },
-        },
-        {
-          type: "url",
-          params: {
-            display_text: "Author",
-            url: "https://wa.me/2347080968564",
-            merchant_url: "https://wa.me/2347080968564",
-          },
-        },
-        {
-          type: "url",
-          params: {
-            display_text: "Channel",
-            url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K",
-            merchant_url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K",
-          },
-        }
-      ],
-      header: {
-        title: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
-        subtitle: "ʜᴏᴛᴀʀᴏ-ᴍᴅ WABOT",
-        hasMediaAttachment: false,
-      },
-      footer: {
-        text: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
-      },
-      body: {
-        text: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
-      },
-    };
-    return await message.sendMessage(message.jid, {text: heder }, data, {}, "interactive");
-  }
-);*/
-
 command(
   {
     pattern: "menu",
     fromMe: isPrivate,
     desc: "send a button message menu",
-    usage: ".button",
+    usage: ".menu",
     type: "user",
   },
   async (message, match, m) => {
-      const prefix = config.HANDLERS;
+      const prefix = config.HANDLERS; // Dynamic prefix
       let [date, time] = new Date()
         .toLocaleString("en-IN", { timeZone: "Africa/Lagos" })
         .split(",");
+      
       let heder = `
 ╭════════════════ ⪩
-┃  〘 *☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬* 〙
+┃  〘 *Queen_Alya* 〙
 ╰════════════════ ⪨
 ╭════════════════ ⪩
 ┃   *Oᴡɴᴇʀ : ${OWNER_NAME}*
@@ -140,33 +47,15 @@ command(
 ┃   *Rᴜɴᴛɪᴍᴇ : ${runtime(process.uptime())}*
 ╰════════════════ ⪨
 `;
+
     let data = {
       jid: message.jid,
       button: [
-        /*{
-          type: "list",
-          params: {
-            title: "Button 1",
-            sections: [
-              {
-                title: "Button 1",
-                rows: [
-                  {
-                    header: "title",
-                    title: "Button 1",
-                    description: "Description 1",
-                    id: "/menu",
-                  },
-                ],
-              },
-            ],
-          },
-        },*/
         {
           type: "reply",
           params: {
             display_text: "MENU 📃",
-            id: `/list`,
+            id: `${prefix}list`, // Dynamic prefix for the button ID
           },
         },
         {
@@ -182,7 +71,7 @@ command(
           params: {
             display_text: "Channel",
             url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K",
-            merchant_url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K", 
+            merchant_url: "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K",
           },
         },
         {
@@ -190,14 +79,16 @@ command(
           params: {
             display_text: "Author",
             url: "https://wa.me/2347080968564",
-            merchant_url: "https://wa.me/2347080968564", 
-          }, 
+            merchant_url: "https://wa.me/2347080968564",
+          },
         },
       ],
       header: {
-        title: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
+        title: "Queen_Alya",
         subtitle: "ʜᴏᴛᴀʀᴏ-ᴍᴅ By Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
-        hasMediaAttachment: false,
+        hasMediaAttachment: true, // Enable media attachment
+        mediaUrl: "https://i.imgur.com/Y0pLkKX.jpeg", // Image URL
+        mediaType: "image/jpeg", // Media type
       },
       footer: {
         text: "By : Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
@@ -206,6 +97,7 @@ command(
         text: heder,
       },
     };
+    
     return await message.sendMessage(message.jid, data, {}, "interactive");
   }
 );
