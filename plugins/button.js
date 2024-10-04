@@ -48,10 +48,16 @@ command(
 ╰════════════════ ⪨
 `;
 
-    // Prepare buttons
+    // Step 1: Send the image separately
+    await message.sendMessage(
+      message.jid, 
+      { image: { url: "https://i.imgur.com/Y0pLkKX.jpeg" }, caption: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ By Tᴀɪʀᴀ Mᴀᴋɪɴᴏ" }
+    );
+
+    // Step 2: Send the button menu
     const buttons = [
         {
-            buttonId: `${prefix}menu`, // Dynamic prefix for the button ID
+            buttonId: `${prefix}list`, // Dynamic prefix for the button ID
             buttonText: { displayText: "MENU 📃" },
             type: 1,
         },
@@ -75,16 +81,13 @@ command(
         }
     ];
 
-    // Step 1: Use the method to send an image with caption and buttons
-    let content = "https://wallpaperaccess.com/full/5531321.jpg"; // Image URL
     const buttonMessage = {
-        caption: heder, // The menu as the caption
+        text: heder,
         footer: "By : Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
         buttons: buttons,
-        headerType: 4 // Header type 4 includes the image as the header
+        headerType: 1
     };
     
-    // Send the image with the buttons and caption
-    await message.sendMessage(message.jid, content, buttonMessage, "image");
+    await message.sendMessage(message.jid, buttonMessage);
   }
 );
