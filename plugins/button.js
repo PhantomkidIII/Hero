@@ -32,10 +32,10 @@ command(
       let [date, time] = new Date()
         .toLocaleString("en-IN", { timeZone: "Africa/Lagos" })
         .split(",");
-      
+
       let heder = `
 ╭════════════════ ⪩
-┃  〘 *Queen_Alya* 〙
+┃  〘 *☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬* 〙
 ╰════════════════ ⪨
 ╭════════════════ ⪩
 ┃   *Oᴡɴᴇʀ : ${OWNER_NAME}*
@@ -48,6 +48,13 @@ command(
 ╰════════════════ ⪨
 `;
 
+    // Step 1: Send the image separately
+    await message.sendMessage(
+      message.jid, 
+      { image: { url: "https://i.imgur.com/Y0pLkKX.jpeg" }, caption: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ By Tᴀɪʀᴀ Mᴀᴋɪɴᴏ" }
+    );
+
+    // Step 2: Send the button menu
     let data = {
       jid: message.jid,
       button: [
@@ -55,7 +62,7 @@ command(
           type: "reply",
           params: {
             display_text: "MENU 📃",
-            id: `${prefix}list`, // Dynamic prefix for the button ID
+            id: `${prefix}menu`, // Dynamic prefix for the button ID
           },
         },
         {
@@ -84,11 +91,8 @@ command(
         },
       ],
       header: {
-        title: "Queen_Alya",
+        title: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
         subtitle: "ʜᴏᴛᴀʀᴏ-ᴍᴅ By Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
-        hasMediaAttachment: true, // Enable media attachment
-        mediaUrl: "https://i.imgur.com/Y0pLkKX.jpeg", // Image URL
-        mediaType: "image/jpeg", // Media type
       },
       footer: {
         text: "By : Tᴀɪʀᴀ Mᴀᴋɪɴᴏ",
