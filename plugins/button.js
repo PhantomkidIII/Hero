@@ -1,3 +1,4 @@
+
 const { command, formatp, isPrivate, clockString, pm2Uptime } = require("../lib");
 const config = require("../config");
 const process = require("process");
@@ -51,7 +52,7 @@ command(
     // Prepare buttons
     const buttons = [
         {
-            buttonId: `${prefix}list`, // Dynamic prefix for the button ID
+            buttonId: `${prefix}menu`, // Dynamic prefix for the button ID
             buttonText: { displayText: "MENU 📃" },
             type: 1,
         },
