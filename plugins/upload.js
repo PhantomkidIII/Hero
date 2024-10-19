@@ -4,6 +4,24 @@ const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
 
+// Function to map MIME types to file extensions
+const getExtensionFromMimeType = (mimeType) => {
+  switch (mimeType) {
+    case "image/jpeg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "video/mp4":
+      return "mp4";
+    case "audio/mpeg":
+      return "mp3";
+    case "audio/ogg":
+      return "ogg";
+    default:
+      return "bin"; // Fallback extension for unknown types
+  }
+};
+
 // Function to save buffer to a temporary file with the correct extension
 const buffToFile = async (buffer, extension) => {
   const filePath = path.join(__dirname, `temp_${Date.now()}.${extension}`);
@@ -33,9 +51,10 @@ command(
         return await message.reply("Failed to download media.");
       }
 
-      // Get the file extension based on the mimeType of the media
+      // Get the mimeType from the quoted message
       const mimeType = message.reply_message.mimetype;
-      const extension = mimeType.split("/")[1]; // Get file extension from mimeType
+      // Get the file extension based on the mimeType
+      const extension = getExtensionFromMimeType(mimeType);
 
       // Save the buffer to a temporary file with the correct extension
       inputPath = await buffToFile(mediaBuffer, extension);
@@ -43,7 +62,7 @@ command(
 
       // Prepare the form data with the file stream
       let formData = new FormData();
-      formData.append("file", fs.createReadStream(inputPath), path.basename(inputPath));
+      formData.append("file", fs.createReadStream(inputPath), `temp_${Date.now()}.${extension}`);
 
       // Send a POST request to the Itzpire API with the file
       let response = await axios({
