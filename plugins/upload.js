@@ -1,7 +1,6 @@
 const { command, isPrivate } = require("../lib/");
 const axios = require("axios");
 const FormData = require("form-data");
-const fs = require("fs");
 
 command(
   {
@@ -24,10 +23,20 @@ command(
 
     // Download the file
     let buff = await m.quoted.download();
+    
+    // Determine the file extension based on the type of the file
+    let extension = '';
+    if (isImage) {
+      extension = '.jpg'; // Assuming default for images
+    } else if (isVideo) {
+      extension = '.mp4'; // Assuming default for videos
+    } else if (isAudio) {
+      extension = '.mp3'; // Assuming default for audio
+    }
 
     // Create FormData to send to the API
     const formData = new FormData();
-    formData.append('file', buff, { filename: 'file' });
+    formData.append('file', buff, { filename: 'file' + extension });
 
     try {
       // Send the file to the API
@@ -39,8 +48,11 @@ command(
 
       // Check the response from the API
       if (response.data.status === "success" && response.data.fileInfo && response.data.fileInfo.url) {
-        // Send back the URL
-        await message.sendMessage(message.jid, `File uploaded successfully! Here is the URL: ${response.data.fileInfo.url}`);
+        // Send back the URL with appropriate extension
+        await message.sendMessage(
+          message.jid, 
+          `File uploaded successfully! Here is the URL: ${response.data.fileInfo.url}${extension}`
+        );
       } else {
         await message.reply("Failed to upload the file. Please try again.");
       }
