@@ -18,11 +18,11 @@ command(
     // Time-based greeting
     const currentHour = new Date().getHours();
     let greeting;
-     if (hours >= 5 && hours < 12) {
+     if (currentHour >= 5 && currentHour < 12) {
       greeting = "🌸 *Good Morning* 🌸 - Time for a fresh start!";
-    } else if (hours >= 12 && hours < 18) {
+    } else if (currentHour >= 12 && currentHour < 18) {
       greeting = "🌞 *Good Afternoon* 🌞 - Keep up the great work!";
-    } else if (hours >= 18 && hours < 22) {
+    } else if (currentHour >= 18 && currentHour < 22) {
       greeting = "🌆 *Good Evening* 🌆 - Unwind and relax!";
     } else {
       greeting = "🌙 *Good Night* 🌙 - Rest and recharge!";
