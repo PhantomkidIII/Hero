@@ -40,13 +40,13 @@ command(
 
       // Stylish menu header with greeting and borders
       let menu = `
-🌟✨━━━━━━━━━━━━━━━━━━✨🌟
-          *${BOT_NAME}*
+┏❐━━━━━━━━━━━━━━━✨🌟
+          *𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓*
 💬 ${greeting}, ${OWNER_NAME}!
 📅 *Date:* ${date}
 🕒 *Time:* ${time}
 🔢 *Total Commands:* ${plugins.commands.length}
-🌟✨━━━━━━━━━━━━━━━━━━✨🌟
+┗❐━━━━━━━━━━━━━━━✨🌟
 `;
 
       let categories = {};
@@ -61,11 +61,11 @@ command(
       });
 
       Object.keys(categories).sort().forEach((category) => {
-        menu += `\n🔥✨━━━━━━━━━━━━━━✨🔥\n`;
-        menu += `✦ *${category.toUpperCase()}* ✦\n`;
-        menu += `🔥✨━━━━━━━━━━━━━━✨🔥\n`;
+        menu += `\n🔥✨━━━━━━━━━━━━✨🔥\n`;
+        menu += `🌀 *${category.toUpperCase()}* 🌀\n`;
+        menu += `🔥✨━━━━━━━━━━━━━✨🔥\n`;
         categories[category].sort().forEach((cmd) => {
-          menu += `  ➤ ${cmd} 🌟\n`;
+          menu += `  ❄️ ${cmd} 🌟\n`;
         });
       });
 
