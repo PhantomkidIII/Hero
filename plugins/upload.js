@@ -48,10 +48,17 @@ command(
 
       // Check the response from the API
       if (response.data.status === "success" && response.data.fileInfo && response.data.fileInfo.url) {
-        // Send back the URL with appropriate extension
+        let fileUrl = response.data.fileInfo.url;
+
+        // Prevent appending extension if it already exists
+        if (!fileUrl.endsWith(extension)) {
+          fileUrl += extension;
+        }
+
+        // Send back the URL with the appropriate extension
         await message.sendMessage(
           message.jid, 
-          `File uploaded successfully! Here is the URL: ${response.data.fileInfo.url}${extension}`
+          `File uploaded successfully! Here is the URL: ${fileUrl}`
         );
       } else {
         await message.reply("Failed to upload the file. Please try again.");
