@@ -15,7 +15,7 @@ command(
   {
     pattern: "upload",
     fromMe: isPrivate,
-    desc: "Upload image, video, or audio to widipe API and get a URL",
+    desc: "Upload image, video, or audio to Itzpire API and get a URL",
     type: "media",
   },
   async (message, match, m) => {
@@ -41,25 +41,22 @@ command(
       let formData = new FormData();
       formData.append("file", fs.createReadStream(inputPath), path.basename(inputPath));
 
-      // Log headers for debugging
-      console.log("FormData Headers:", formData.getHeaders());
-
-      // Send a POST request to the API with the file
+      // Send a POST request to the Itzpire API with the file
       let response = await axios({
         method: "post",
-        url: "https://widipe.com/api/upload.php",
+        url: "https://itzpire.com/tools/upload",
         data: formData,
         headers: {
           ...formData.getHeaders(),
         },
-        responseType: "json",  // Adjust depending on the expected response type
+        responseType: "json",  // Ensure the response is in JSON format
       });
 
       console.log("Response Data:", response.data); // Log the response for debugging
 
-      // Check if the response is valid and contains the URL
-      if (response.data.status && response.data.result && response.data.result.url) {
-        const fileUrl = response.data.result.url;
+      // Check if the response is valid and contains the file info
+      if (response.data.status === "success" && response.data.fileInfo && response.data.fileInfo.url) {
+        const fileUrl = response.data.fileInfo.url;
         await message.reply(`Uploaded successfully! Here is your URL: ${fileUrl}`);
       } else {
         await message.reply("Failed to upload the file. Please check the API response.");
