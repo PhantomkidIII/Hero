@@ -41,7 +41,8 @@ command(
       // Stylish menu header with greeting and borders
       let menu = `
 ┏❐━━━━━━━━━━━━━━━꧂
-          *𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓*
+    *𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓*
+┗❐━━━━━━━━━━━━━━━꧂
 ${greeting}
 👑 *Developer:* *KING 👑*
 📅 *Date:* ${date}
