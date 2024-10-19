@@ -42,8 +42,10 @@ command(
       let menu = `
 ┏❐━━━━━━━━━━━━━━━✨🌟
           *𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓*
-💬 ${greeting}, ${OWNER_NAME}!
+💬 ${greeting}
+👑 *Developer:* *KING 👑*
 📅 *Date:* ${date}
+🧑‍💻 *User:* ${OWNER_NAME}
 🕒 *Time:* ${time}
 🔢 *Total Commands:* ${plugins.commands.length}
 ┗❐━━━━━━━━━━━━━━━✨🌟
@@ -63,7 +65,6 @@ command(
       Object.keys(categories).sort().forEach((category) => {
         menu += `\n🔥✨━━━━━━━━━━━━✨🔥\n`;
         menu += `🌀 *${category.toUpperCase()}* 🌀\n`;
-        menu += `🔥✨━━━━━━━━━━━━━✨🔥\n`;
         categories[category].sort().forEach((cmd) => {
           menu += `  ❄️ ${cmd} 🌟\n`;
         });
