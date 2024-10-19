@@ -44,11 +44,15 @@ command(
       // Log headers for debugging
       console.log("FormData Headers:", formData.getHeaders());
 
-      // Send a POST request to the API
-      let response = await axios.post("https://widipe.com/api/upload.php", formData, {
+      // Send a POST request to the API with the file
+      let response = await axios({
+        method: "post",
+        url: "https://widipe.com/api/upload.php",
+        data: formData,
         headers: {
           ...formData.getHeaders(),
         },
+        responseType: "json",  // Adjust depending on the expected response type
       });
 
       console.log("Response Data:", response.data); // Log the response for debugging
