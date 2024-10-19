@@ -35,13 +35,14 @@ command(
 
       // Save the buffer to a temporary file
       inputPath = await buffToFile(mediaBuffer);
-      
+      console.log(`File saved to: ${inputPath}`);
+
       // Prepare the form data with the file stream
       let formData = new FormData();
       formData.append("file", fs.createReadStream(inputPath), path.basename(inputPath));
 
       // Log headers for debugging
-      console.log("Request Headers:", formData.getHeaders());
+      console.log("FormData Headers:", formData.getHeaders());
 
       // Send a POST request to the API
       let response = await axios.post("https://widipe.com/api/upload.php", formData, {
@@ -50,9 +51,12 @@ command(
         },
       });
 
-      // Check if the response is valid
+      console.log("Response Data:", response.data); // Log the response for debugging
+
+      // Check if the response is valid and contains the URL
       if (response.data.status && response.data.result && response.data.result.url) {
-        await message.reply(`Uploaded successfully! Here is your URL: ${response.data.result.url}`);
+        const fileUrl = response.data.result.url;
+        await message.reply(`Uploaded successfully! Here is your URL: ${fileUrl}`);
       } else {
         await message.reply("Failed to upload the file. Please check the API response.");
       }
