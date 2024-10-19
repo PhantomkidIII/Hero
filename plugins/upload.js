@@ -1,32 +1,37 @@
 const { command, isPrivate } = require("../lib/");
 const axios = require("axios");
 const FormData = require("form-data");
-const fs = require("fs");
-const path = require("path");
 
 // Function to map MIME types to file extensions
-const getExtensionFromMimeType = (mimeType) => {
-  switch (mimeType) {
-    case "image/jpeg":
-      return "jpg";
-    case "image/png":
-      return "png";
-    case "video/mp4":
-      return "mp4";
-    case "audio/mpeg":
-      return "mp3";
-    case "audio/ogg":
-      return "ogg";
-    default:
-      return "bin"; // Fallback extension for unknown types
+const getExtensionFromMimeType = (mimeType, messageType) => {
+  if (mimeType) {
+    switch (mimeType) {
+      case "image/jpeg":
+        return "jpg";
+      case "image/png":
+        return "png";
+      case "video/mp4":
+        return "mp4";
+      case "audio/mpeg":
+        return "mp3";
+      case "audio/ogg":
+        return "ogg";
+      default:
+        return "bin"; // Default to .bin for unrecognized MIME types
+    }
   }
-};
 
-// Function to save buffer to a temporary file with the correct extension
-const buffToFile = async (buffer, extension) => {
-  const filePath = path.join(__dirname, `temp_${Date.now()}.${extension}`);
-  fs.writeFileSync(filePath, buffer);
-  return filePath;
+  // Fallbacks based on message type if mimeType is missing
+  switch (messageType) {
+    case "image":
+      return "jpg";  // Default to .jpg for images
+    case "video":
+      return "mp4";  // Default to .mp4 for videos
+    case "audio":
+      return "mp3";  // Default to .mp3 for audio
+    default:
+      return "bin";  // Catch-all fallback for other types
+  }
 };
 
 command(
@@ -42,27 +47,30 @@ command(
       return await message.reply("Reply to an image, video, or audio to upload.");
     }
 
-    let inputPath; // Initialize inputPath before the try block
-
     try {
-      // Download the media from the quoted message
+      // Download the media from the quoted message as a buffer
       let mediaBuffer = await m.quoted.download();
       if (!mediaBuffer) {
         return await message.reply("Failed to download media.");
       }
 
-      // Get the mimeType from the quoted message
+      // Get the mimeType and messageType from the quoted message
       const mimeType = message.reply_message.mimetype;
-      // Get the file extension based on the mimeType
-      const extension = getExtensionFromMimeType(mimeType);
+      const messageType = message.reply_message.image
+        ? "image"
+        : message.reply_message.video
+        ? "video"
+        : "audio"; // Determine if the message contains image, video, or audio
 
-      // Save the buffer to a temporary file with the correct extension
-      inputPath = await buffToFile(mediaBuffer, extension);
-      console.log(`File saved to: ${inputPath}`);
+      // Get the file extension based on the mimeType or messageType
+      const extension = getExtensionFromMimeType(mimeType, messageType);
 
-      // Prepare the form data with the file stream
+      // Prepare the form data with the file buffer
       let formData = new FormData();
-      formData.append("file", fs.createReadStream(inputPath), `temp_${Date.now()}.${extension}`);
+      formData.append("file", mediaBuffer, {
+        filename: `temp_${Date.now()}.${extension}`,
+        contentType: mimeType || `application/octet-stream`
+      });
 
       // Send a POST request to the Itzpire API with the file
       let response = await axios({
@@ -85,9 +93,6 @@ command(
         await message.reply("Failed to upload the file. Please check the API response.");
       }
 
-      // Cleanup: remove the temporary file
-      fs.unlinkSync(inputPath);
-      
     } catch (error) {
       // Check if error response exists
       if (error.response) {
@@ -96,11 +101,6 @@ command(
       } else {
         console.error("Error occurred during upload:", error);
         await message.reply("An error occurred while uploading. Please try again.");
-      }
-
-      // Cleanup: ensure temporary file is removed if it was created
-      if (inputPath && fs.existsSync(inputPath)) {
-        fs.unlinkSync(inputPath);
       }
     }
   }
