@@ -40,15 +40,15 @@ command(
 
       // Stylish menu header with greeting and borders
       let menu = `
-┏❐━━━━━━━━━━━━━━━✨🌟
+┏❐━━━━━━━━━━━━━━━꧂
           *𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓*
-💬 ${greeting}
+${greeting}
 👑 *Developer:* *KING 👑*
 📅 *Date:* ${date}
 🧑‍💻 *User:* ${OWNER_NAME}
 🕒 *Time:* ${time}
 🔢 *Total Commands:* ${plugins.commands.length}
-┗❐━━━━━━━━━━━━━━━✨🌟
+┗❐━━━━━━━━━━━━━━━꧂
 `;
 
       let categories = {};
