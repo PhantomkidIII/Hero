@@ -25,7 +25,7 @@ const _auth = `\x32\x33\x34\x37\x30\x38\x30\x39\x36\x38\x35\x36\x34`;
 const ACR_A = process.env.ACR_A || "ff489a0160188cf5f0750eaf486eee74";
 const ACR_S = process.env.ACR_A || "ytu3AdkCu7fkRVuENhXxs9jsOW4YJtDXimAWMpJp";
 global.presence = process.env.PRESENCE || "recording",//composing ,recording ,available ,unavailable 
-global.website = "https://whatsapp.com/channel/0029VaY0Zq32P59piTo5rg0K"
+global.website = "https://whatsapp.com/channel/0029VaeW5Tw4yltQOYIO5E2D"
 module.exports = {
   ANTILINK: process.env.ANTI_LINK || "on", //on or off
   LOGS: toBool(process.env.LOGS) || true,
@@ -40,16 +40,16 @@ module.exports = {
   PACKNAME: process.env.PACKNAME || "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
   WELCOME_MSG: process.env.WELCOME_MSG || `Hi @user Welcome to @gname\n\n☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬`,
   GOODBYE_MSG: process.env.GOODBYE_MSG || `Hi @user It was Nice Seeing you\n\n☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬`,
-  AUTHOR: process.env.AUTHOR || "Tᴀɪʀᴀ•Mᴀᴋɪɴᴏ",
+  AUTHOR: process.env.AUTHOR || "KING 👑",
   MODS: process.env.MODS || "2349123721026",//Add Sudo numbers here.
   SUDO: process.env.SUDO || "2349123721026",//Also sudo numbers
   HEROKU_APP_NAME: process.env.HEROKU_APP_NAME || "",
   HEROKU_API_KEY: process.env.HEROKU_API_KEY || "",
   OWNER_NUMBER: process.env.OWNER_NUMBER || "2349123721026",
-  OWNER_NAME: process.env.OWNER_NAME || "Tᴀɪʀᴀ✧Mᴀᴋɪɴᴏ",
+  OWNER_NAME: process.env.OWNER_NAME || "KING 👑",
   HEROKU: toBool(process.env.HEROKU) || true,
-  BOT_NAME: process.env.BOT_NAME || "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
-  PROCESSNAME: process.env.PROCESSNAME || "HOTARO-MD",
+  BOT_NAME: process.env.BOT_NAME || "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓",
+  PROCESSNAME: process.env.PROCESSNAME || "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓",
   WORK_TYPE: process.env.WORK_TYPE || "private",
   DELETED_LOG: toBool(process.env.DELETED_LOG) || false,
   DELETED_LOG_CHAT: process.env.DELETED_LOG_CHAT || false,
