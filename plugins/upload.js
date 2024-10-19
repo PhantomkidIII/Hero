@@ -4,9 +4,9 @@ const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
 
-// Function to save buffer to a temporary file and return the path
-const buffToFile = async (buffer) => {
-  const filePath = path.join(__dirname, `temp_${Date.now()}.tmp`);
+// Function to save buffer to a temporary file with the correct extension
+const buffToFile = async (buffer, extension) => {
+  const filePath = path.join(__dirname, `temp_${Date.now()}.${extension}`);
   fs.writeFileSync(filePath, buffer);
   return filePath;
 };
@@ -33,8 +33,12 @@ command(
         return await message.reply("Failed to download media.");
       }
 
-      // Save the buffer to a temporary file
-      inputPath = await buffToFile(mediaBuffer);
+      // Get the file extension based on the mimeType of the media
+      const mimeType = message.reply_message.mimetype;
+      const extension = mimeType.split("/")[1]; // Get file extension from mimeType
+
+      // Save the buffer to a temporary file with the correct extension
+      inputPath = await buffToFile(mediaBuffer, extension);
       console.log(`File saved to: ${inputPath}`);
 
       // Prepare the form data with the file stream
