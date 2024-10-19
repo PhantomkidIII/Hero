@@ -58,4 +58,3 @@ const unbanUser = async (chatid) => {
 };
 
 module.exports = { isBanned, banUser, unbanUser };
-  
