@@ -24,6 +24,8 @@ command(
       return await message.reply("Reply to an image, video, or audio to upload.");
     }
 
+    let inputPath; // Initialize inputPath before the try block
+
     try {
       // Download the media from the quoted message
       let mediaBuffer = await m.quoted.download();
@@ -32,7 +34,7 @@ command(
       }
 
       // Save the buffer to a temporary file
-      let inputPath = await buffToFile(mediaBuffer);
+      inputPath = await buffToFile(mediaBuffer);
       
       // Prepare the form data with the file stream
       let formData = new FormData();
@@ -68,8 +70,8 @@ command(
         await message.reply("An error occurred while uploading. Please try again.");
       }
 
-      // If there was an error, ensure we still clean up
-      if (fs.existsSync(inputPath)) {
+      // Cleanup: ensure temporary file is removed if it was created
+      if (inputPath && fs.existsSync(inputPath)) {
         fs.unlinkSync(inputPath);
       }
     }
