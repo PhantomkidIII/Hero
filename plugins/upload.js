@@ -49,7 +49,7 @@ command(
 
     try {
       // Download the media from the quoted message as a buffer
-      let mediaBuffer = await m.quoted.download();
+      let mediaBuffer = await message.reply_message.download();
       if (!mediaBuffer) {
         return await message.reply("Failed to download media.");
       }
