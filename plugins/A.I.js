@@ -254,7 +254,6 @@ command(
         // If the response is an image, send it directly
         const imageBuffer = await response.buffer(); // Get the image as a buffer
         return await message.reply(
-          message.jid,
           imageBuffer,
           {
             mimetype: "image/jpeg",
@@ -273,7 +272,6 @@ command(
 
         // Send the photo URL to the user
         return await message.reply(
-          message.jid,
           { url: photoUrl },
           {
             mimetype: "image/jpeg",
@@ -323,7 +321,6 @@ command(
       // Send only the first image from the result array
       const imageUrl = data.result[0]; // Get the first image link
       await message.reply(
-        message.jid,
         { url: imageUrl },
         {
           mimetype: "image/jpeg",
