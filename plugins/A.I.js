@@ -224,12 +224,16 @@ command(
     }
   }
 );
+const { command, isPrivate } = require("../lib/");
+const axios = require("axios");
+const FormData = require("form-data");
+
 command(
   {
     pattern: "removebg",
     fromMe: isPrivate,
     desc: "Upload an image, audio, or video file",
-    type: "tools",
+    type: "ai",
   },
   async (message, match, m) => {
     if (!message.reply_message) 
@@ -251,7 +255,7 @@ command(
     formData.append('file', buff, { filename: 'file.jpg' }); // assuming the file is an image for bg removal
 
     try {
-      // Send the file to the API
+      // Send the file to the upload API
       const uploadResponse = await axios.post('https://itzpire.com/tools/upload', formData, {
         headers: {
           ...formData.getHeaders(),
@@ -269,20 +273,25 @@ command(
         if (removeBgResponse.data && removeBgResponse.data.result && removeBgResponse.data.result.urls) {
           const finalImageUrl = removeBgResponse.data.result.urls;
 
-          // Send back the image to the user
-          await message.sendMessage(
-            message.jid, 
-            { image: { url: finalImageUrl }, caption: "Here is the image with the background removed!" }
+          // Send back the image to the user using the specified format
+          return await message.sendMessage(
+            message.jid,
+            { url: finalImageUrl },
+            {
+              mimetype: "image/jpeg",
+              caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+            },
+            "image"
           );
         } else {
-          await message.reply("Failed to process the image. Please try again.");
+          return await message.sendMessage(message.jid, "Failed to process the image. Please try again.");
         }
       } else {
-        await message.reply("Failed to upload the file. Please try again.");
+        return await message.sendMessage(message.jid, "Failed to upload the file. Please try again.");
       }
     } catch (error) {
       console.error(error);
-      await message.reply("An error occurred while processing your request.");
+      return await message.sendMessage(message.jid, "An error occurred while processing your request.");
     }
   }
 );

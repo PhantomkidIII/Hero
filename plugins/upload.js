@@ -4,10 +4,10 @@ const FormData = require("form-data");
 
 command(
   {
-    pattern: "upload",
+    pattern: "url",
     fromMe: isPrivate,
     desc: "Upload an image, audio, or video file",
-    type: "any",
+    type: "tools",
   },
   async (message, match, m) => {
     if (!message.reply_message) 
