@@ -224,10 +224,6 @@ command(
     }
   }
 );
-const { command, isPrivate } = require("../lib/");
-const axios = require("axios");
-const FormData = require("form-data");
-
 command(
   {
     pattern: "removebg",
