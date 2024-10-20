@@ -224,6 +224,49 @@ command(
     }
   }
 );
+
+async function createImageLink(buff, isImage, isVideo, isAudio) {
+  // Determine the file extension based on the type of the file
+  let extension = '';
+  if (isImage) {
+    extension = '.jpg'; // Assuming default for images
+  } else if (isVideo) {
+    extension = '.mp4'; // Assuming default for videos
+  } else if (isAudio) {
+    extension = '.mp3'; // Assuming default for audio
+  }
+
+  // Create FormData to send to the API
+  const formData = new FormData();
+  formData.append('file', buff, { filename: 'file' + extension });
+
+  try {
+    // Send the file to the upload API
+    const response = await axios.post('https://itzpire.com/tools/upload', formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
+    });
+
+    // Check the response from the API
+    if (response.data.status === "success" && response.data.fileInfo && response.data.fileInfo.url) {
+      let fileUrl = response.data.fileInfo.url;
+
+      // Prevent appending extension if it already exists
+      if (!fileUrl.endsWith(extension)) {
+        fileUrl += extension;
+      }
+
+      return fileUrl;
+    } else {
+      throw new Error("Failed to upload the file.");
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error("An error occurred while uploading the file.");
+  }
+}
+
 command(
   {
     pattern: "removebg",
@@ -246,47 +289,32 @@ command(
     // Download the file
     let buff = await m.quoted.download();
     
-    // Create FormData to send to the API
-    const formData = new FormData();
-    formData.append('file', buff, { filename: 'file.jpg' }); // assuming the file is an image for bg removal
-
     try {
-      // Send the file to the upload API
-      const uploadResponse = await axios.post('https://itzpire.com/tools/upload', formData, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-      });
+      // Use the function to create the image link
+      const fileUrl = await createImageLink(buff, isImage, isVideo, isAudio);
 
-      // Check the response from the upload API
-      if (uploadResponse.data.status === "success" && uploadResponse.data.fileInfo && uploadResponse.data.fileInfo.url) {
-        let fileUrl = uploadResponse.data.fileInfo.url;
+      // Send the URL to the removebg API
+      const removeBgResponse = await axios.get(`https://api-gifted-tech.onrender.com/api/tools/removebg?url=${encodeURIComponent(fileUrl)}&apikey=gifteddevskk`);
 
-        // Send the URL to the removebg API
-        const removeBgResponse = await fetch(`https://api-gifted-tech.onrender.com/api/tools/removebg?url=${encodeURIComponent(fileUrl)}&apikey=gifteddevskk`);
+      // Parse the response from the removebg API
+      const removeBgData = removeBgResponse.data;
 
-        // Parse the response from the removebg API
-        const removeBgData = await removeBgResponse.json();
+      // Check if the response contains the result URL
+      if (removeBgData && removeBgData.result && removeBgData.result.urls) {
+        const finalImageUrl = removeBgData.result.urls;
 
-        // Check if the response contains the result URL
-        if (removeBgData && removeBgData.result && removeBgData.result.urls) {
-          const finalImageUrl = removeBgData.result.urls;
-
-          // Send back the image to the user using the specified format
-          return await message.sendMessage(
-            message.jid,
-            { url: finalImageUrl },
-            {
-              mimetype: "image/jpeg",
-              caption: "Queen Alya generated this image:",
-            },
-            "image"
-          );
-        } else {
-          return await message.sendMessage(message.jid, "Failed to process the image. Please try again.");
-        }
+        // Send back the image to the user using the specified format
+        return await message.sendMessage(
+          message.jid,
+          { url: finalImageUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "Queen Alya generated this image:",
+          },
+          "image"
+        );
       } else {
-        return await message.sendMessage(message.jid, "Failed to upload the file. Please try again.");
+        return await message.sendMessage(message.jid, "Failed to process the image. Please try again.");
       }
     } catch (error) {
       console.error(error);
