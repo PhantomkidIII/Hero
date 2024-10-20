@@ -265,9 +265,12 @@ command(
         // Send the URL to the removebg API
         const removeBgResponse = await fetch(`https://api-gifted-tech.onrender.com/api/tools/removebg?url=${encodeURIComponent(fileUrl)}&apikey=gifteddevskk`);
 
-        // Check the response from the removebg API
-        if (removeBgResponse.data && removeBgResponse.data.result && removeBgResponse.data.result.urls) {
-          const finalImageUrl = removeBgResponse.data.result.urls;
+        // Parse the response from the removebg API
+        const removeBgData = await removeBgResponse.json();
+
+        // Check if the response contains the result URL
+        if (removeBgData && removeBgData.result && removeBgData.result.urls) {
+          const finalImageUrl = removeBgData.result.urls;
 
           // Send back the image to the user using the specified format
           return await message.sendMessage(
@@ -275,7 +278,7 @@ command(
             { url: finalImageUrl },
             {
               mimetype: "image/jpeg",
-              caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+              caption: "Queen Alya generated this image:",
             },
             "image"
           );
