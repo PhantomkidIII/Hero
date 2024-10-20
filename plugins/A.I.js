@@ -229,7 +229,7 @@ command(
     pattern: "removebg",
     fromMe: isPrivate,
     desc: "Upload an image, audio, or video file",
-    type: "ai",
+    type: "tools",
   },
   async (message, match, m) => {
     if (!message.reply_message) 
@@ -246,19 +246,9 @@ command(
     // Download the file
     let buff = await m.quoted.download();
     
-    // Determine the file extension based on the type of the file
-    let extension = '';
-    if (isImage) {
-      extension = '.jpg'; // Assuming default for images
-    } else if (isVideo) {
-      extension = '.mp4'; // Assuming default for videos
-    } else if (isAudio) {
-      extension = '.mp3'; // Assuming default for audio
-    }
-
     // Create FormData to send to the API
     const formData = new FormData();
-    formData.append('file', buff, { filename: 'file' + extension });
+    formData.append('file', buff, { filename: 'file.jpg' }); // assuming the file is an image for bg removal
 
     try {
       // Send the file to the API
@@ -276,7 +266,7 @@ command(
         const removeBgResponse = await axios.get(`https://widipe.com/removebg?url=${encodeURIComponent(fileUrl)}`);
 
         // Check the response from the removebg API
-        if (removeBgResponse.data.result && removeBgResponse.data.result.urls) {
+        if (removeBgResponse.data && removeBgResponse.data.result && removeBgResponse.data.result.urls) {
           const finalImageUrl = removeBgResponse.data.result.urls;
 
           // Send back the image to the user
