@@ -224,101 +224,117 @@ command(
     }
   }
 );
-
-async function createImageLink(buff, isImage, isVideo, isAudio) {
-  // Determine the file extension based on the type of the file
-  let extension = '';
-  if (isImage) {
-    extension = '.jpg'; // Assuming default for images
-  } else if (isVideo) {
-    extension = '.mp4'; // Assuming default for videos
-  } else if (isAudio) {
-    extension = '.mp3'; // Assuming default for audio
-  }
-
-  // Create FormData to send to the API
-  const formData = new FormData();
-  formData.append('file', buff, { filename: 'file' + extension });
-
-  try {
-    // Send the file to the upload API
-    const response = await axios.post('https://itzpire.com/tools/upload', formData, {
-      headers: {
-        ...formData.getHeaders(),
-      },
-    });
-
-    // Check the response from the API
-    if (response.data.status === "success" && response.data.fileInfo && response.data.fileInfo.url) {
-      let fileUrl = response.data.fileInfo.url;
-
-      // Prevent appending extension if it already exists
-      if (!fileUrl.endsWith(extension)) {
-        fileUrl += extension;
-      }
-
-      return fileUrl;
-    } else {
-      throw new Error("Failed to upload the file.");
-    }
-  } catch (error) {
-    console.error(error);
-    throw new Error("An error occurred while uploading the file.");
-  }
-}
-
 command(
   {
-    pattern: "removebg",
+    pattern: "dalle",
     fromMe: isPrivate,
-    desc: "Upload an image, audio, or video file",
-    type: "ai",
+    desc: "Generate image from text",
+    type: "image",
   },
-  async (message, match, m) => {
-    if (!message.reply_message) 
-      return await message.reply("Reply to an image, video, or audio file");
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
 
-    // Check if the replied message is an image, video, or audio
-    const isImage = message.reply_message.image;
-    const isVideo = message.reply_message.video;
-    const isAudio = message.reply_message.audio;
-
-    if (!isImage && !isVideo && !isAudio)
-      return await message.reply("Reply to a valid image, video, or audio file");
-
-    // Download the file
-    let buff = await m.quoted.download();
-    
     try {
-      // Use the function to create the image link
-      const fileUrl = await createImageLink(buff, isImage, isVideo, isAudio);
+      // Call the API to generate the image from the text
+      const apiUrl = `https://widipe.com/v1/text2img?text=${encodeURIComponent(match)}`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
 
-      // Send the URL to the removebg API
-      const removeBgResponse = await axios.get(`https://api-gifted-tech.onrender.com/api/tools/removebg?url=${encodeURIComponent(fileUrl)}&apikey=gifteddevskk`);
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
 
-      // Parse the response from the removebg API
-      const removeBgData = removeBgResponse.data;
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
 
-      // Check if the response contains the result URL
-      if (removeBgData && removeBgData.result && removeBgData.result.urls) {
-        const finalImageUrl = removeBgData.result.urls;
-
-        // Send back the image to the user using the specified format
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
         return await message.sendMessage(
           message.jid,
-          { url: finalImageUrl },
+          imageBuffer,
           {
             mimetype: "image/jpeg",
-            caption: "Queen Alya generated this image:",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
           },
           "image"
         );
       } else {
-        return await message.sendMessage(message.jid, "Failed to process the image. Please try again.");
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
       }
     } catch (error) {
       console.error(error);
-      return await message.sendMessage(message.jid, "An error occurred while processing your request.");
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
+command(
+  {
+    pattern: "bingimg",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "image",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://widipe.com/bingimg?text=${encodeURIComponent(match)}`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Parse the JSON response
+      const data = await response.json();
+      if (!data.status || data.result.length === 0) {
+        return await message.sendMessage(message.jid, "No images found or an error occurred.");
+      }
+
+      // Loop through and send all images from the result array
+      for (const imageUrl of data.result) {
+        await message.sendMessage(
+          message.jid,
+          { url: imageUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated", // Changed caption to match your bot's name
+          },
+          "image"
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
     }
   }
 );
