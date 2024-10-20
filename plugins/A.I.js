@@ -263,7 +263,7 @@ command(
         let fileUrl = uploadResponse.data.fileInfo.url;
 
         // Send the URL to the removebg API
-        const removeBgResponse = await axios.get(`https://widipe.com/removebg?url=${encodeURIComponent(fileUrl)}`);
+        const removeBgResponse = await fetch(`https://api-gifted-tech.onrender.com/api/tools/removebg?url=${encodeURIComponent(fileUrl)}&apikey=gifteddevskk`);
 
         // Check the response from the removebg API
         if (removeBgResponse.data && removeBgResponse.data.result && removeBgResponse.data.result.urls) {
