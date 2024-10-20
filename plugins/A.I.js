@@ -233,7 +233,7 @@ command(
   },
   async (message, match) => {
     match = match || message.reply_message.text;
-    if (!match) return await message.reply(message.jid, "Provide me a text");
+    if (!match) return await message.reply("Provide me a text");
 
     try {
       // Call the API to generate the image from the text
@@ -244,7 +244,7 @@ command(
 
       // Check for a successful response
       if (!response.ok) {
-        return await message.reply(message.jid, `Error: ${response.status} ${response.statusText}`);
+        return await message.reply(`Error: ${response.status} ${response.statusText}`);
       }
 
       // Get the content type of the response
@@ -266,7 +266,7 @@ command(
         // If the response is JSON, parse it and get the image URL
         const data = await response.json();
         if (data.status !== 200) {
-          return await message.reply(message.jid, "An error occurred while fetching the data.");
+          return await message.reply("An error occurred while fetching the data.");
         }
 
         const photoUrl = data.result;
@@ -283,11 +283,11 @@ command(
         );
       } else {
         // Handle unexpected content types
-        return await message.reply(message.jid, "Unexpected content type received from the API.");
+        return await message.reply("Unexpected content type received from the API.");
       }
     } catch (error) {
       console.error(error);
-      return await message.reply(message.jid, "Failed to generate image.");
+      return await message.reply("Failed to generate image.");
     }
   }
 );
@@ -300,7 +300,7 @@ command(
   },
   async (message, match) => {
     match = match || message.reply_message.text;
-    if (!match) return await message.reply(message.jid, "Provide me a text");
+    if (!match) return await message.reply("Provide me a text");
 
     try {
       // Call the API to generate the image from the text
@@ -311,13 +311,13 @@ command(
 
       // Check for a successful response
       if (!response.ok) {
-        return await message.reply(message.jid, `Error: ${response.status} ${response.statusText}`);
+        return await message.reply(`Error: ${response.status} ${response.statusText}`);
       }
 
       // Parse the JSON response
       const data = await response.json();
       if (!data.status || data.result.length === 0) {
-        return await message.reply(message.jid, "No images found or an error occurred.");
+        return await message.reply("No images found or an error occurred.");
       }
 
       // Send only the first image from the result array
