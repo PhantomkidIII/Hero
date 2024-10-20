@@ -293,7 +293,7 @@ command(
 );
 command(
   {
-    pattern: "img-bing",
+    pattern: "imgbing",
     fromMe: isPrivate,
     desc: "Generate image from text",
     type: "image",
