@@ -5,10 +5,10 @@ const fetch = require("node-fetch");
 
 command(
   {
-    pattern: "rembg2",
+    pattern: "rmbg",
     fromMe: isPrivate,
     desc: "Upload an image, audio, or video file and remove background",
-    type: "tools",
+    type: "ai",
   },
   async (message, match, m) => {
     if (!message.reply_message) 
