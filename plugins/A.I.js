@@ -293,7 +293,7 @@ command(
 );
 command(
   {
-    pattern: "img",
+    pattern: "fluximg",
     fromMe: isPrivate,
     desc: "Generate image from text",
     type: "image",
@@ -304,8 +304,8 @@ command(
 
     try {
       // Call the API to generate the image from the text
-      const apiUrl = `https://widipe.com/bingimg?text=${encodeURIComponent(match)}`;
-
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/flux-diffusion?prompt=${encodeURIComponent(match)}`;
+      
       // Fetch the response from the API
       const response = await fetch(apiUrl);
 
@@ -314,25 +314,44 @@ command(
         return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
       }
 
-      // Parse the JSON response
-      const data = await response.json();
-      if (!data.status) {
-        return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
       }
-
-      // Get the first image URL
-      const firstImageUrl = data.result[0]; 
-
-      // Send the first image to the user
-      return await message.sendMessage(
-        message.jid,
-        { url: firstImageUrl },
-        {
-          mimetype: "image/jpeg",
-          caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
-        },
-        "image"
-      );
     } catch (error) {
       console.error(error);
       return await message.sendMessage(message.jid, "Failed to generate image.");
