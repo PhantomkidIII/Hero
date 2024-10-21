@@ -121,12 +121,12 @@ command(
   {
     pattern: "toanime",
     fromMe: isPrivate,
-    desc: "Convert an image to anime style or upload a file",
+    desc: "Upload an image, audio, or video file and convert it to anime style",
     type: "ai",
   },
   async (message, match, m) => {
     if (!message.reply_message) 
-      return await message.reply("Reply to an image, video, or audio file.");
+      return await message.reply("Reply to an image, video, or audio file");
 
     // Check if the replied message is an image, video, or audio
     const isImage = message.reply_message.image;
@@ -134,10 +134,10 @@ command(
     const isAudio = message.reply_message.audio;
 
     if (!isImage && !isVideo && !isAudio)
-      return await message.reply("Reply to a valid image, video, or audio file.");
+      return await message.reply("Reply to a valid image, video, or audio file");
 
     // Send loading message
-    await message.reply("Uploading your file, please wait...");
+    await message.reply("Processing your request, please wait...");
 
     // Download the file
     let buff = await m.quoted.download();
@@ -158,61 +158,56 @@ command(
 
     try {
       // Send the file to the upload API
-      const response = await axios.post('https://itzpire.com/tools/upload', formData, {
+      const uploadResponse = await axios.post('https://itzpire.com/tools/upload', formData, {
         headers: {
           ...formData.getHeaders(),
         },
       });
 
-      // Check the response from the upload API
-      if (response.data.status === "success" && response.data.fileInfo && response.data.fileInfo.url) {
-        let fileUrl = response.data.fileInfo.url;
+      // Check the response from the API
+      if (uploadResponse.data.status === "success" && uploadResponse.data.fileInfo && uploadResponse.data.fileInfo.url) {
+        let fileUrl = uploadResponse.data.fileInfo.url;
 
         // Prevent appending extension if it already exists
         if (!fileUrl.endsWith(extension)) {
           fileUrl += extension;
         }
 
-        // If the file is an image, proceed to convert it to anime-style
-        if (isImage) {
-          await message.reply("Converting image to anime style, please wait...");
-          
-          // Use the new anime API URL
-          const animeApiUrl = `https://itzpire.com/tools/photo2anime?url=${encodeURIComponent(fileUrl)}&type=version%202%20(%F0%9F%94%BA%20robustness,%F0%9F%94%BB%20stylization)`;
+        // Proceed to convert the image to anime style using the new API
+        const animeApiUrl = `https://itzpire.com/tools/photo2anime?url=${encodeURIComponent(fileUrl)}&type=version%202%20(%F0%9F%94%BA%20robustness,%F0%9F%94%BB%20stylization)`;
+        
+        // Fetch the response from the anime API
+        const animeResponse = await fetch(animeApiUrl);
 
-          // Convert the image to anime-style using the new API
-          const animeResponse = await axios.get(animeApiUrl);
-          
-          // Handle the anime conversion response
-          if (animeResponse.data.status === "success") {
-            const animeImageUrl = animeResponse.data.result.img;
-
-            // Send the converted anime image
-            await message.sendMessage(
-              message.jid,
-              { url: animeImageUrl },
-              {
-                mimetype: "image/jpeg",
-                caption: "Here is your anime-style image!",
-              },
-              "image"
-            );
-          } else {
-            await message.reply("Failed to convert the image to anime style. Please try again.");
-          }
-        } else {
-          // If not an image, simply return the uploaded file URL
-          await message.sendMessage(
-            message.jid, 
-            `File uploaded successfully! Here is the URL: ${fileUrl}`
-          );
+        // Check for a successful response
+        if (!animeResponse.ok) {
+          return await message.sendMessage(message.jid, `Error: ${animeResponse.status} ${animeResponse.statusText}`);
         }
+
+        // Parse the response
+        const data = await animeResponse.json();
+        if (data.status !== "success") {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the anime image.");
+        }
+
+        const photoUrl = data.result.img;
+
+        // Send the anime-style photo to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "Here is your image converted to anime style!",
+          },
+          "image"
+        );
       } else {
         await message.reply("Failed to upload the file. Please try again.");
       }
     } catch (error) {
       console.error(error);
-      await message.reply("An error occurred while processing the file.");
+      await message.reply("An error occurred during the process.");
     }
   }
 );
