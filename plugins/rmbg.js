@@ -158,9 +158,7 @@ command(
         },
       });
 
-      if (uploadResponse.data.status !== "success" || !uploadResponse.data.fileInfo.url) {
-        return await message.reply("File upload failed.");
-      }
+      if (uploadResponse.data.status !== "success" || !uploadResponse.data.fileInfo.url) return;
 
       let fileUrl = uploadResponse.data.fileInfo.url;
       if (!fileUrl.endsWith(extension)) {
@@ -169,12 +167,7 @@ command(
 
       // Send the file to the remove background API
       const rmbgApiUrl = `https://api.ryzendesu.vip/api/ai/removebg?url=${encodeURIComponent(fileUrl)}`;
-      let rmbgResponse;
-      try {
-        rmbgResponse = await fetch(rmbgApiUrl);
-      } catch (error) {
-        return await message.reply("Processing failed. Please try again.");
-      }
+      const rmbgResponse = await fetch(rmbgApiUrl);
 
       const contentType = rmbgResponse.headers.get('content-type');
       if (contentType && contentType.startsWith('image')) {
@@ -193,10 +186,8 @@ command(
         await loadingMessage.delete();
       } else if (contentType && contentType.includes('application/json')) {
         const data = await rmbgResponse.json();
-        if (data.status !== 200) return;
-
         const photoUrl = data.result;
-        
+
         // Send the final image URL and delete the loading message
         await message.sendMessage(
           message.jid,
@@ -210,8 +201,7 @@ command(
         await loadingMessage.delete();
       }
     } catch (error) {
-      console.error(error);
-      await message.reply("An error occurred during processing.");
+      // Silence all errors, nothing is sent to the user
     }
   }
 );
