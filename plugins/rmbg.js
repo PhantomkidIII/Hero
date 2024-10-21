@@ -177,13 +177,15 @@ command(
         if (isImage) {
           await message.reply("Converting image to anime style, please wait...");
           
-          // Convert the image to anime-style using the API
-          const animeResponse = await fetch(`https://itzpire.com/tools/photo2anime2?url=${encodeURIComponent(fileUrl)}&type=version%200.4`);
-          const animeData = await animeResponse.json(); // Parse the JSON
+          // Use the new anime API URL
+          const animeApiUrl = `https://itzpire.com/tools/photo2anime?url=${encodeURIComponent(fileUrl)}&type=version%202%20(%F0%9F%94%BA%20robustness,%F0%9F%94%BB%20stylization)`;
 
+          // Convert the image to anime-style using the new API
+          const animeResponse = await axios.get(animeApiUrl);
+          
           // Handle the anime conversion response
-          if (animeData.status === "success") {
-            const animeImageUrl = animeData.result.img;
+          if (animeResponse.data.status === "success") {
+            const animeImageUrl = animeResponse.data.result.img;
 
             // Send the converted anime image
             await message.sendMessage(
