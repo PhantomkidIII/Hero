@@ -5,7 +5,7 @@ const fetch = require("node-fetch");
 
 command(
   {
-    pattern: "rmbg2",
+    pattern: "rembg2",
     fromMe: isPrivate,
     desc: "Upload an image, audio, or video file and remove background",
     type: "tools",
@@ -21,6 +21,9 @@ command(
 
     if (!isImage && !isVideo && !isAudio)
       return await message.reply("Reply to a valid image, video, or audio file");
+
+    // Send loading message
+    await message.reply("Processing your request, please wait...");
 
     // Download the file
     let buff = await m.quoted.download();
@@ -112,95 +115,5 @@ command(
       console.error(error);
       await message.reply("An error occurred during the process.");
     }
-  }
-);
-command(
-  {
-    pattern: "rmbg3",
-    fromMe: isPrivate,
-    desc: "Upload an image, audio, or video file and remove background",
-    type: "tools",
-  },
-  async (message, match, m) => {
-    if (!message.reply_message) return;
-
-    const isImage = message.reply_message.image;
-    const isVideo = message.reply_message.video;
-    const isAudio = message.reply_message.audio;
-
-    if (!isImage && !isVideo && !isAudio) return;
-
-    // Send a loading message while processing
-    const loadingMessage = await message.reply("Processing, please wait...");
-
-    // Download the file
-    const buff = await m.quoted.download();
-    
-    // Determine file extension
-    let extension = '';
-    if (isImage) {
-      extension = '.jpg';
-    } else if (isVideo) {
-      extension = '.mp4';
-    } else if (isAudio) {
-      extension = '.mp3';
-    }
-
-    // Create FormData to send to the API
-    const formData = new FormData();
-    formData.append('file', buff, { filename: 'file' + extension });
-
-    // Send file to the API and remove background
-    let fileUrl = '';
-    try {
-      const uploadResponse = await axios.post('https://itzpire.com/tools/upload', formData, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-      });
-      if (uploadResponse.data.fileInfo && uploadResponse.data.fileInfo.url) {
-        fileUrl = uploadResponse.data.fileInfo.url;
-      }
-    } catch (e) {
-      // Ignore errors during upload
-    }
-
-    if (fileUrl) {
-      const rmbgApiUrl = `https://api.ryzendesu.vip/api/ai/removebg?url=${encodeURIComponent(fileUrl)}`;
-      try {
-        const rmbgResponse = await fetch(rmbgApiUrl);
-
-        const contentType = rmbgResponse.headers.get('content-type');
-        if (contentType && contentType.startsWith('image')) {
-          const imageBuffer = await rmbgResponse.buffer();
-          await message.sendMessage(
-            message.jid,
-            imageBuffer,
-            {
-              mimetype: "image/jpeg",
-              caption: "Background removed successfully!",
-            },
-            "image"
-          );
-        } else if (contentType && contentType.includes('application/json')) {
-          const data = await rmbgResponse.json();
-          const photoUrl = data.result;
-          await message.sendMessage(
-            message.jid,
-            { url: photoUrl },
-            {
-              mimetype: "image/jpeg",
-              caption: "Background removed successfully!",
-            },
-            "image"
-          );
-        }
-      } catch (e) {
-        // Ignore errors during background removal
-      }
-    }
-
-    // Delete the loading message after processing
-    await loadingMessage.delete();
   }
 );
