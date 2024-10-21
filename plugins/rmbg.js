@@ -114,3 +114,90 @@ command(
     }
   }
 );
+command(
+  {
+    pattern: "rmbg3",
+    fromMe: isPrivate,
+    desc: "Upload an image, audio, or video file and remove background",
+    type: "tools",
+  },
+  async (message, match, m) => {
+    if (!message.reply_message)
+      return await message.reply("Reply to an image, video, or audio file");
+
+    const isImage = message.reply_message.image;
+    const isVideo = message.reply_message.video;
+    const isAudio = message.reply_message.audio;
+
+    if (!isImage && !isVideo && !isAudio)
+      return await message.reply("Reply to a valid image, video, or audio file");
+
+    try {
+      // Download the file
+      let buff = await message.reply_message.download();
+
+      let extension = '';
+      if (isImage) {
+        extension = '.jpg';
+      } else if (isVideo) {
+        extension = '.mp4';
+      } else if (isAudio) {
+        extension = '.mp3';
+      }
+
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', buff, { filename: 'file' + extension });
+
+      // Send file to API
+      const uploadResponse = await axios.post('https://itzpire.com/tools/upload', formData, {
+        headers: {
+          ...formData.getHeaders(),
+        },
+      });
+
+      // Check the API response
+      if (uploadResponse.data.status === "success" && uploadResponse.data.fileInfo && uploadResponse.data.fileInfo.url) {
+        let fileUrl = uploadResponse.data.fileInfo.url;
+
+        // Proceed with background removal
+        const rmbgApiUrl = `https://api.ryzendesu.vip/api/ai/removebg?url=${encodeURIComponent(fileUrl)}`;
+        const rmbgResponse = await fetch(rmbgApiUrl);
+
+        if (!rmbgResponse.ok) {
+          return await message.reply(`Error: ${rmbgResponse.status} ${rmbgResponse.statusText}`);
+        }
+
+        const contentType = rmbgResponse.headers.get('content-type');
+        if (contentType.startsWith('image')) {
+          const imageBuffer = await rmbgResponse.buffer();
+          return await message.sendMessage(
+            message.jid,
+            imageBuffer,
+            { mimetype: "image/jpeg", caption: "Background removed successfully!" },
+            "image"
+          );
+        } else if (contentType.includes('application/json')) {
+          const data = await rmbgResponse.json();
+          if (data.status !== 200) {
+            return await message.reply("Error occurred while fetching data.");
+          }
+          const photoUrl = data.result;
+          return await message.sendMessage(
+            message.jid,
+            { url: photoUrl },
+            { mimetype: "image/jpeg", caption: "Background removed successfully!" },
+            "image"
+          );
+        } else {
+          return await message.reply("Unexpected content type from API.");
+        }
+      } else {
+        return await message.reply("Failed to upload the file. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      await message.reply("An error occurred during the process.");
+    }
+  }
+);
