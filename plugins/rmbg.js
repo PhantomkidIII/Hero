@@ -126,7 +126,7 @@ command(
   },
   async (message, match, m) => {
     if (!message.reply_message) 
-      return await message.reply("Reply to an image, video, or audio file");
+      return await message.reply("Reply to an image, video, or audio file.");
 
     // Check if the replied message is an image, video, or audio
     const isImage = message.reply_message.image;
@@ -134,7 +134,10 @@ command(
     const isAudio = message.reply_message.audio;
 
     if (!isImage && !isVideo && !isAudio)
-      return await message.reply("Reply to a valid image, video, or audio file");
+      return await message.reply("Reply to a valid image, video, or audio file.");
+
+    // Send loading message
+    await message.reply("Uploading your file, please wait...");
 
     // Download the file
     let buff = await m.quoted.download();
@@ -172,6 +175,8 @@ command(
 
         // If the file is an image, proceed to convert it to anime-style
         if (isImage) {
+          await message.reply("Converting image to anime style, please wait...");
+          
           // Convert the image to anime-style using the API
           const animeResponse = await axios.get(`https://itzpire.com/tools/photo2anime2?url=${encodeURIComponent(fileUrl)}&type=version%200.4`);
           
