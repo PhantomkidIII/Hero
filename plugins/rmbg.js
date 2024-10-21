@@ -122,17 +122,13 @@ command(
     type: "tools",
   },
   async (message, match, m) => {
-    if (!message.reply_message) {
-      return await message.reply("Reply to an image, video, or audio file");
-    }
+    if (!message.reply_message) return;
 
     const isImage = message.reply_message.image;
     const isVideo = message.reply_message.video;
     const isAudio = message.reply_message.audio;
 
-    if (!isImage && !isVideo && !isAudio) {
-      return await message.reply("Reply to a valid image, video, or audio file");
-    }
+    if (!isImage && !isVideo && !isAudio) return;
 
     try {
       // Download the file
@@ -159,9 +155,7 @@ command(
         },
       });
 
-      if (uploadResponse.data.status !== "success" || !uploadResponse.data.fileInfo.url) {
-        return await message.reply("Failed to upload the file. Please try again.");
-      }
+      if (uploadResponse.data.status !== "success" || !uploadResponse.data.fileInfo.url) return;
 
       let fileUrl = uploadResponse.data.fileInfo.url;
       if (!fileUrl.endsWith(extension)) {
@@ -172,9 +166,7 @@ command(
       const rmbgApiUrl = `https://api.ryzendesu.vip/api/ai/removebg?url=${encodeURIComponent(fileUrl)}`;
       const rmbgResponse = await fetch(rmbgApiUrl);
 
-      if (!rmbgResponse.ok) {
-        return await message.reply(`Error: ${rmbgResponse.status} ${rmbgResponse.statusText}`);
-      }
+      if (!rmbgResponse.ok) return;
 
       const contentType = rmbgResponse.headers.get('content-type');
       if (contentType && contentType.startsWith('image')) {
@@ -190,9 +182,7 @@ command(
         );
       } else if (contentType && contentType.includes('application/json')) {
         const data = await rmbgResponse.json();
-        if (data.status !== 200) {
-          return await message.reply("An error occurred while processing the data.");
-        }
+        if (data.status !== 200) return;
 
         const photoUrl = data.result;
         return await message.sendMessage(
@@ -204,12 +194,9 @@ command(
           },
           "image"
         );
-      } else {
-        return await message.reply("Unexpected content type received from the API.");
       }
     } catch (error) {
       console.error(error);
-      return await message.reply("An error occurred during the process.");
     }
   }
 );
