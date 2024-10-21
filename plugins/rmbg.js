@@ -164,9 +164,18 @@ command(
 
       // Send the file to the remove background API
       const rmbgApiUrl = `https://api.ryzendesu.vip/api/ai/removebg?url=${encodeURIComponent(fileUrl)}`;
-      const rmbgResponse = await fetch(rmbgApiUrl);
+      let rmbgResponse;
+      try {
+        rmbgResponse = await fetch(rmbgApiUrl);
+      } catch (error) {
+        console.error('Error while calling rmbg API:', error);
+        return; // Exit if there's an actual network error
+      }
 
-      if (!rmbgResponse.ok) return;
+      // Proceed even if we encounter a 500, since the result may still be usable
+      if (!rmbgResponse.ok && rmbgResponse.status === 500) {
+        console.warn('Received 500 error from rmbg API, but continuing...');
+      }
 
       const contentType = rmbgResponse.headers.get('content-type');
       if (contentType && contentType.startsWith('image')) {
