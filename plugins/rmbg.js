@@ -131,6 +131,9 @@ command(
     if (!isImage && !isVideo && !isAudio) return;
 
     try {
+      // Send a loading message while processing
+      const loadingMessage = await message.reply("Processing, please wait...");
+
       // Download the file
       const buff = await m.quoted.download();
       
@@ -155,7 +158,9 @@ command(
         },
       });
 
-      if (uploadResponse.data.status !== "success" || !uploadResponse.data.fileInfo.url) return;
+      if (uploadResponse.data.status !== "success" || !uploadResponse.data.fileInfo.url) {
+        return await message.reply("File upload failed.");
+      }
 
       let fileUrl = uploadResponse.data.fileInfo.url;
       if (!fileUrl.endsWith(extension)) {
@@ -168,19 +173,15 @@ command(
       try {
         rmbgResponse = await fetch(rmbgApiUrl);
       } catch (error) {
-        console.error('Error while calling rmbg API:', error);
-        return; // Exit if there's an actual network error
-      }
-
-      // Proceed even if we encounter a 500, since the result may still be usable
-      if (!rmbgResponse.ok && rmbgResponse.status === 500) {
-        console.warn('Received 500 error from rmbg API, but continuing...');
+        return await message.reply("Processing failed. Please try again.");
       }
 
       const contentType = rmbgResponse.headers.get('content-type');
       if (contentType && contentType.startsWith('image')) {
         const imageBuffer = await rmbgResponse.buffer();
-        return await message.sendMessage(
+        
+        // Send the final image and delete the loading message
+        await message.sendMessage(
           message.jid,
           imageBuffer,
           {
@@ -189,12 +190,15 @@ command(
           },
           "image"
         );
+        await loadingMessage.delete();
       } else if (contentType && contentType.includes('application/json')) {
         const data = await rmbgResponse.json();
         if (data.status !== 200) return;
 
         const photoUrl = data.result;
-        return await message.sendMessage(
+        
+        // Send the final image URL and delete the loading message
+        await message.sendMessage(
           message.jid,
           { url: photoUrl },
           {
@@ -203,9 +207,11 @@ command(
           },
           "image"
         );
+        await loadingMessage.delete();
       }
     } catch (error) {
       console.error(error);
+      await message.reply("An error occurred during processing.");
     }
   }
 );
