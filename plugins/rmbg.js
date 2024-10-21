@@ -130,78 +130,77 @@ command(
 
     if (!isImage && !isVideo && !isAudio) return;
 
+    // Send a loading message while processing
+    const loadingMessage = await message.reply("Processing, please wait...");
+
+    // Download the file
+    const buff = await m.quoted.download();
+    
+    // Determine file extension
+    let extension = '';
+    if (isImage) {
+      extension = '.jpg';
+    } else if (isVideo) {
+      extension = '.mp4';
+    } else if (isAudio) {
+      extension = '.mp3';
+    }
+
+    // Create FormData to send to the API
+    const formData = new FormData();
+    formData.append('file', buff, { filename: 'file' + extension });
+
+    // Send file to the API and remove background
+    let fileUrl = '';
     try {
-      // Send a loading message while processing
-      const loadingMessage = await message.reply("Processing, please wait...");
-
-      // Download the file
-      const buff = await m.quoted.download();
-      
-      // Determine file extension
-      let extension = '';
-      if (isImage) {
-        extension = '.jpg';
-      } else if (isVideo) {
-        extension = '.mp4';
-      } else if (isAudio) {
-        extension = '.mp3';
-      }
-
-      // Create FormData to send to the API
-      const formData = new FormData();
-      formData.append('file', buff, { filename: 'file' + extension });
-
-      // Send file to the API
       const uploadResponse = await axios.post('https://itzpire.com/tools/upload', formData, {
         headers: {
           ...formData.getHeaders(),
         },
       });
-
-      if (uploadResponse.data.status !== "success" || !uploadResponse.data.fileInfo.url) return;
-
-      let fileUrl = uploadResponse.data.fileInfo.url;
-      if (!fileUrl.endsWith(extension)) {
-        fileUrl += extension;
+      if (uploadResponse.data.fileInfo && uploadResponse.data.fileInfo.url) {
+        fileUrl = uploadResponse.data.fileInfo.url;
       }
-
-      // Send the file to the remove background API
-      const rmbgApiUrl = `https://api.ryzendesu.vip/api/ai/removebg?url=${encodeURIComponent(fileUrl)}`;
-      const rmbgResponse = await fetch(rmbgApiUrl);
-
-      const contentType = rmbgResponse.headers.get('content-type');
-      if (contentType && contentType.startsWith('image')) {
-        const imageBuffer = await rmbgResponse.buffer();
-        
-        // Send the final image and delete the loading message
-        await message.sendMessage(
-          message.jid,
-          imageBuffer,
-          {
-            mimetype: "image/jpeg",
-            caption: "Background removed successfully!",
-          },
-          "image"
-        );
-        await loadingMessage.delete();
-      } else if (contentType && contentType.includes('application/json')) {
-        const data = await rmbgResponse.json();
-        const photoUrl = data.result;
-
-        // Send the final image URL and delete the loading message
-        await message.sendMessage(
-          message.jid,
-          { url: photoUrl },
-          {
-            mimetype: "image/jpeg",
-            caption: "Background removed successfully!",
-          },
-          "image"
-        );
-        await loadingMessage.delete();
-      }
-    } catch (error) {
-      // Silence all errors, nothing is sent to the user
+    } catch (e) {
+      // Ignore errors during upload
     }
+
+    if (fileUrl) {
+      const rmbgApiUrl = `https://api.ryzendesu.vip/api/ai/removebg?url=${encodeURIComponent(fileUrl)}`;
+      try {
+        const rmbgResponse = await fetch(rmbgApiUrl);
+
+        const contentType = rmbgResponse.headers.get('content-type');
+        if (contentType && contentType.startsWith('image')) {
+          const imageBuffer = await rmbgResponse.buffer();
+          await message.sendMessage(
+            message.jid,
+            imageBuffer,
+            {
+              mimetype: "image/jpeg",
+              caption: "Background removed successfully!",
+            },
+            "image"
+          );
+        } else if (contentType && contentType.includes('application/json')) {
+          const data = await rmbgResponse.json();
+          const photoUrl = data.result;
+          await message.sendMessage(
+            message.jid,
+            { url: photoUrl },
+            {
+              mimetype: "image/jpeg",
+              caption: "Background removed successfully!",
+            },
+            "image"
+          );
+        }
+      } catch (e) {
+        // Ignore errors during background removal
+      }
+    }
+
+    // Delete the loading message after processing
+    await loadingMessage.delete();
   }
 );
