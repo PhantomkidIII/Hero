@@ -425,3 +425,509 @@ command(
     }
   }
 );
+command(
+  {
+    pattern: "trt",
+    fromMe: isPrivate,
+    desc: "Translate text using the specified languages.",
+    type: "ai",
+  },
+  async (message, match) => {
+    try {
+      // Extract the query from the message
+      const query = match ? match.trim() : null;
+      if (!query) {
+        return await message.reply("Please provide text to translate, e.g., `.translate Hello`.");
+      }
+
+      // Define the API URL, assuming the target language is French for this example
+      const apiUrl = `https://api.kastg.xyz/api/tool/translate?input=${encodeURIComponent(query)}&to=en&from=auto`;
+      const response = await fetch(apiUrl);
+
+      // Check if the API response is successful
+      if (!response.ok) {
+        return await message.reply(`*_Error: ${response.status} ${response.statusText}_*`);
+      }
+
+      // Get the result from the API response
+      const data = await response.json();
+      const result = data.result[0]; // Extract the result
+
+      // Send the final translation result
+      await message.reply(`*Translation:* \n\nFrom: ${result.from_language}\nTo: ${result.to_language}\nInput: ${result.input}\nOutput: ${result.output}`);
+    } catch (error) {
+      // Handle any errors
+      await message.reply(`Failed to get a response. Error: ${error.message}`);
+      console.error("Error fetching translation:", error);
+    }
+  }
+);
+command(
+  {
+    pattern: "aimoji",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/aimoji?prompt=${encodeURIComponent(match)}`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
+command(
+  {
+    pattern: "vintageanime",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/waifu-diff?prompt=${encodeURIComponent(match)}&style=Vintage-Anime`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
+command(
+  {
+    pattern: "softanime",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/waifu-diff?prompt=${encodeURIComponent(match)}&style=Soft-Anime`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
+command(
+  {
+    pattern: "waifuanime",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/waifu-diff?prompt=${encodeURIComponent(match)}&style=Waifu`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
+command(
+  {
+    pattern: "animeimage",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/waifu-diff?prompt=${encodeURIComponent(match)}&style=Anime`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
+command(
+  {
+    pattern: "ghiblianime",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/waifu-diff?prompt=${encodeURIComponent(match)}&style=Studio-Ghibli`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
+command(
+  {
+    pattern: "cuteanime",
+    fromMe: isPrivate,
+    desc: "Generate image from text",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
+
+    try {
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.ryzendesu.vip/api/ai/waifu-diff?prompt=${encodeURIComponent(match)}&style=Cute-Anime`;
+      
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate image.");
+    }
+  }
+);
