@@ -672,7 +672,7 @@ command(
 );
 command(
   {
-    pattern: "waifuanime",
+    pattern: "animewaifu",
     fromMe: isPrivate,
     desc: "Generate image from text",
     type: "ai",
