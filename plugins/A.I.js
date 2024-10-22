@@ -1,4 +1,11 @@
-const { command, isPrivate } = require("../lib/");
+const {
+  command,
+  isPrivate,
+  isUrl,
+  AddMp3Meta,
+  getBuffer,
+  toAudio,
+} = require("../lib");
 const axios = require("axios");
 const fetch = require("node-fetch");
 const FormData = require("form-data");
