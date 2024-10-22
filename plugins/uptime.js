@@ -61,7 +61,7 @@ command(
     const caption = `*Ping:* ${ping}ms\n\n 𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓`;
 
     // Send the caption directly as a string
-    await message.client.sendMessage(message.jid, caption);
+    await await message.reply(caption);
   }
 );
 global.PRESENCE =
