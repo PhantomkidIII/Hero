@@ -19,7 +19,7 @@ command(
 
       // Check if the API call was successful
       if (!response.ok) {
-        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+        return await message.sendMessage(`Error: ${response.status} ${response.statusText}`);
       }
 
       // Parse the JSON response
@@ -28,17 +28,11 @@ command(
 
       // Send the image to the user
       return await message.sendMessage(
-        message.jid,
-        { url: imageUrl },
-        {
-          mimetype: "image/jpeg",
-          caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Waifu Image",
-        },
-        "image"
+        { image: { url: imageUrl }, caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Waifu Image" }
       );
     } catch (error) {
       console.error(error);
-      return await message.sendMessage(message.jid, "Failed to fetch waifu image.");
+      return await message.sendMessage("Failed to fetch waifu image.");
     }
   }
 );
