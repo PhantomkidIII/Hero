@@ -58,10 +58,28 @@ command(
     const end = Date.now();
     const ping = end - start;
 
-    const caption = `*Ping:* ${ping}ms\n\nQueen Alya`;
+    const caption = `*Ping:* ${ping}ms\n\n 𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓`;
 
-    await message.client.sendMessage(message.jid, {
-      text: caption,
-    });
+    // Send the caption directly as a string
+    await message.client.sendMessage(message.jid, caption);
   }
 );
+global.PRESENCE =
+  process.env.PRESENCE && process.env.PRESENCE === "online"
+    ? "available"
+    : process.env.PRESENCE || "";
+command(
+ { 
+  on: "text" 
+ }, async (message, match, m, client) => {
+  try {
+    if (
+      ["unavailable", "available", "composing", "recording", "paused"].includes(
+        presence
+      )
+    )
+      message.client.sendPresenceUpdate(presence, message.jid);
+  } catch (e) {
+    console.log(e);
+  }
+});
