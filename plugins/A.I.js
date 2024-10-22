@@ -931,3 +931,42 @@ command(
     }
   }
 );
+command(
+  {
+    pattern: "tts",
+    fromMe: isPrivate,
+    desc: "Convert text to speech",
+    type: "ai"
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.reply("Please provide a text input for TTS");
+
+    let apiUrl = `https://api.kastg.xyz/api/ai/tts?input=${encodeURIComponent(match)}&lang=English&voice=Emily`;
+
+    try {
+      let response = await fetch(apiUrl);
+      let json = await response.json();
+
+      if (json.status === "true" && json.result[0] && json.result[0].url) {
+        let audioUrl = json.result[0].url;
+        let audioBuffer = await getBuffer(audioUrl);
+
+        return await message.sendMessage(
+          message.jid,
+          audioBuffer,
+          {
+            mimetype: "audio/mpeg",
+            filename: "tts_emily.mp3",
+          },
+          "audio"
+        );
+      } else {
+        return await message.reply("Failed to generate TTS audio. Try again.");
+      }
+    } catch (error) {
+      console.log(error);
+      return await message.reply("An error occurred while processing the request.");
+    }
+  }
+);
