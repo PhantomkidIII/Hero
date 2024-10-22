@@ -764,20 +764,28 @@ command(
 
         const photoUrl = data.result.img;
 
-        // Save the URL to a temp file
-        const tempFilePath = path.join(__dirname, 'temp-anime-url.txt');
-        fs.writeFileSync(tempFilePath, photoUrl);
+        // Download the image and save it to a temporary file
+        const imageResponse = await fetch(photoUrl);
+        const buffer = await imageResponse.buffer();
+        const tempFilePath = path.join(__dirname, 'temp_anime_image.jpg');
+
+        // Write the image to a temporary file
+        fs.writeFileSync(tempFilePath, buffer);
 
         // Send the anime-style photo to the user
-        return await message.sendMessage(
+        await message.sendMessage(
           message.jid,
-          { url: photoUrl },
+          fs.readFileSync(tempFilePath),
           {
             mimetype: "image/jpeg",
             caption: "Here is your image converted to anime style!",
           },
           "image"
         );
+
+        // Delete the temporary file after sending
+        fs.unlinkSync(tempFilePath);
+
       } else {
         await message.reply("Failed to upload the file. Please try again.");
       }
