@@ -132,44 +132,31 @@ cmdnames.forEach((cmdname) => {
     },
     async (message) => {
       try {
-        // Fetch the anime JSON data from the specified API
         const apiUrl = `https://raw.githubusercontent.com/STAR-KING0/database/main/anime/${cmdname}.json`;
         const response = await fetch(apiUrl);
 
-        // Check if the API call was successful
         if (!response.ok) {
           return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
         }
 
-        // Parse the JSON response
         const data = await response.json();
-        if (!data.url) {
+
+        if (data && data.length > 0) {
+          const randomIndex = Math.floor(Math.random() * data.length);
+          const imageUrl = data[randomIndex];
+
+          await message.sendMessage(
+            message.jid,
+            imageUrl,
+            {
+              mimetype: "image/jpeg",
+              caption: `𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 ${cmdname.charAt(0).toUpperCase() + cmdname.slice(1)} Image`,
+            },
+            "image"
+          );
+        } else {
           return await message.sendMessage(message.jid, `An error occurred while fetching the ${cmdname} image.`);
         }
-
-        const imageUrl = data.url;
-
-        // Download the image and save it to a temporary file
-        const imageResponse = await fetch(imageUrl);
-        const buffer = await imageResponse.buffer();
-        const tempFilePath = path.join(__dirname, `temp_${cmdname}_image.jpg`);
-
-        // Write the image to a temporary file
-        fs.writeFileSync(tempFilePath, buffer);
-
-        // Send the image to the user
-        await message.sendMessage(
-          message.jid,
-          fs.readFileSync(tempFilePath),
-          {
-            mimetype: "image/jpeg",
-            caption: `𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 ${cmdname.charAt(0).toUpperCase() + cmdname.slice(1)} Image`,
-          },
-          "image"
-        );
-
-        // Delete the temporary file after sending
-        fs.unlinkSync(tempFilePath);
       } catch (error) {
         console.error(error);
         return await message.sendMessage(message.jid, `Failed to fetch ${cmdname} image.`);
