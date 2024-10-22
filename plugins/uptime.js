@@ -54,7 +54,7 @@ command(
   },
   async (message, match) => {
     const start = Date.now();
-    await message.client.sendMessage(message.jid, "Pinging...");
+    await await message.reply("Pinging...");
     const end = Date.now();
     const ping = end - start;
 
