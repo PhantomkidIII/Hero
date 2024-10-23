@@ -9,6 +9,7 @@ const {
 const axios = require("axios");
 const fetch = require("node-fetch");
 const FormData = require("form-data");
+const cheerio = require('cheerio');
 command(
   {
     pattern: "bing",
@@ -1041,6 +1042,69 @@ command(
     } catch (error) {
       console.log(error);
       return await message.reply("An error occurred while processing the request.");
+    }
+  }
+);
+command(
+  {
+    pattern: "manga",
+    fromMe: isPrivate,
+    desc: "Generate manga chapter images from MangaNato",
+    type: "anime",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide a manga title and chapter number, e.g., flux One Piece chapter 1120");
+
+    try {
+      // Extract the manga title and chapter number from the input
+      const queryMatch = match.match(/(.+?)\s+chapter\s+(\d+)/i);
+      if (!queryMatch) {
+        return await message.sendMessage(message.jid, "Invalid query format. Use: flux <manga title> chapter <number>");
+      }
+
+      const mangaTitle = queryMatch[1].trim().replace(/\s+/g, '_').toLowerCase(); // Format for URL
+      const chapterNumber = queryMatch[2];
+
+      // Step 1: Search for manga on MangaNato
+      const searchUrl = `https://manganato.com/search/story/${encodeURIComponent(mangaTitle)}`;
+      const searchResponse = await axios.get(searchUrl);
+      const searchHtml = searchResponse.data;
+      const $ = cheerio.load(searchHtml);
+
+      // Step 2: Get the first manga result and its ID
+      const firstMangaLink = $('a.item-title').first().attr('href');
+      if (!firstMangaLink) {
+        return await message.sendMessage(message.jid, `No manga found with the title "${mangaTitle}".`);
+      }
+
+      const mangaIdMatch = firstMangaLink.match(/manga-([a-zA-Z0-9]+)/);
+      if (!mangaIdMatch) {
+        return await message.sendMessage(message.jid, "Error: Could not extract manga ID.");
+      }
+      const mangaId = mangaIdMatch[0]; // Example: 'manga-aa951409'
+
+      // Step 3: Construct the chapter URL
+      const chapterUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}`;
+      console.log(`Fetching URL: ${chapterUrl}`);
+
+      // Step 4: Use the ScreenshotMachine API to screenshot the manga chapter page
+      const screenshotUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(chapterUrl)}&dimension=1024x768`;
+
+      // Step 5: Send the screenshot to the user
+      await message.sendMessage(
+        message.jid,
+        { url: screenshotUrl },
+        {
+          mimetype: "image/jpeg",
+          caption: `Here is a screenshot from chapter ${chapterNumber} of "${mangaTitle}"`,
+        },
+        "image"
+      );
+      
+    } catch (error) {
+      console.error("Error: ", error); // Log error for debugging
+      return await message.sendMessage(message.jid, `Error: ${error.message}\n\nCommand: flux\nFailed to fetch manga chapter.`);
     }
   }
 );
