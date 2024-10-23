@@ -436,30 +436,19 @@ command(
   {
     pattern: "ss",
     fromMe: isPrivate,
-    desc: "Generate screenshot from URL",
+    desc: "Generate image from text",
     type: "ai",
   },
-  async (message, args) => {
-    // Get the URL from args or reply message
-    const match = args[0] || (message.reply_message && message.reply_message.text);
-    
-    if (!match) return await message.sendMessage(message.jid, "Provide me a URL");
-
-    // Basic URL validation
-    const urlPattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-      '((([a-z\\d]{1,})([a-z\\d-]{0,}))\\.){1,}([a-z]{2,})'+ // domain name
-      '(\\/[^\\s]*)?$', 'i'); // path
-
-    if (!urlPattern.test(match)) {
-      return await message.sendMessage(message.jid, "Invalid URL format. Please provide a valid URL.");
-    }
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a text");
 
     try {
-      // Construct the screenshot URL using thum.io
-      const screenshotUrl = `https://image.thum.io/get/fullpage/${encodeURIComponent(match)}`;
+      // Call the API to generate the image from the text
+      const apiUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(match)}&dimension=1024x768`;
       
-      // Fetch the screenshot
-      const response = await fetch(screenshotUrl);
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
 
       // Check for a successful response
       if (!response.ok) {
@@ -476,18 +465,37 @@ command(
           message.jid,
           imageBuffer,
           {
-            mimetype: "image/png", // Assuming PNG format for screenshots
-            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Screenshot Generated",
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          },
+          "image"
+        );
+      } else if (contentType && contentType.includes('application/json')) {
+        // If the response is JSON, parse it and get the image URL
+        const data = await response.json();
+        if (data.status !== 200) {
+          return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+        }
+
+        const photoUrl = data.result;
+
+        // Send the photo URL to the user
+        return await message.sendMessage(
+          message.jid,
+          { url: photoUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
           },
           "image"
         );
       } else {
         // Handle unexpected content types
-        return await message.sendMessage(message.jid, "Unexpected content type received from the screenshot service.");
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
       }
     } catch (error) {
       console.error(error);
-      return await message.sendMessage(message.jid, "Failed to generate screenshot. Please try again later.");
+      return await message.sendMessage(message.jid, "Failed to generate image.");
     }
   }
 );
