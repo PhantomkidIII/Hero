@@ -1,5 +1,5 @@
 {
-  "name": "Hotaro-md",
+  "name": "Nexus-bot",
   "version": "1.0.0",
   "description": "Multifunctional WhatsApp bot based on X-Asena written in Baileys and Javascript.",
   "main": "index.js",
@@ -18,6 +18,7 @@
     "axios": "^1.7.2",
     "bitly": "^7.1.2",
     "browser-id3-writer": "^4.4.0",
+    "cheerio": "^1.0.0-rc.10",
     "dotenv": "^16.4.5",
     "file-type": "^16.5.3",
     "fluent-ffmpeg": "^2.1.2",
@@ -57,7 +58,7 @@
   },
   "scripts": {
     "start": "node --max-old-space-size=4096 index.js",
-    "log": "pm2 start index.js --name hotaro-md && pm2 logs hotaro-md"
+    "log": "pm2 start index.js --name nexus-bot && pm2 logs nexus-bot"
   },
   "repository": {
     "type": "git",
