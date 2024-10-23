@@ -439,9 +439,20 @@ command(
     desc: "Generate screenshot from URL",
     type: "ai",
   },
-  async (message, match) => {
-    match = match || message.reply_message.text;
+  async (message, args) => {
+    // Get the URL from args or reply message
+    const match = args[0] || (message.reply_message && message.reply_message.text);
+    
     if (!match) return await message.sendMessage(message.jid, "Provide me a URL");
+
+    // Basic URL validation
+    const urlPattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+      '((([a-z\\d]{1,})([a-z\\d-]{0,}))\\.){1,}([a-z]{2,})'+ // domain name
+      '(\\/[^\\s]*)?$', 'i'); // path
+
+    if (!urlPattern.test(match)) {
+      return await message.sendMessage(message.jid, "Invalid URL format. Please provide a valid URL.");
+    }
 
     try {
       // Construct the screenshot URL using thum.io
@@ -476,7 +487,7 @@ command(
       }
     } catch (error) {
       console.error(error);
-      return await message.sendMessage(message.jid, "Failed to generate screenshot.");
+      return await message.sendMessage(message.jid, "Failed to generate screenshot. Please try again later.");
     }
   }
 );
