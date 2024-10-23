@@ -434,6 +434,54 @@ command(
 );
 command(
   {
+    pattern: "ss",
+    fromMe: isPrivate,
+    desc: "Generate screenshot from URL",
+    type: "ai",
+  },
+  async (message, match) => {
+    match = match || message.reply_message.text;
+    if (!match) return await message.sendMessage(message.jid, "Provide me a URL");
+
+    try {
+      // Construct the screenshot URL using thum.io
+      const screenshotUrl = `https://image.thum.io/get/fullpage/${encodeURIComponent(match)}`;
+      
+      // Fetch the screenshot
+      const response = await fetch(screenshotUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/png", // Assuming PNG format for screenshots
+            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Screenshot Generated",
+          },
+          "image"
+        );
+      } else {
+        // Handle unexpected content types
+        return await message.sendMessage(message.jid, "Unexpected content type received from the screenshot service.");
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to generate screenshot.");
+    }
+  }
+);
+command(
+  {
     pattern: "trt",
     fromMe: isPrivate,
     desc: "Translate text using the specified languages.",
@@ -804,89 +852,6 @@ command(
     }
   }
 );
-command(
-  {
-    pattern: "ss",
-    fromMe: isPrivate,
-    desc: "screenshot website",
-    type: "ai",
-  },
-  async (message, match) => {
-    match = match || message.reply_message.text;
-    if (!match) return await message.sendMessage(message.jid, "Provide me a valid URL");
-
-    // Ensure the URL starts with http:// or https://
-    if (!match.startsWith("http://") && !match.startsWith("https://")) {
-      match = "https://" + match;
-    }
-
-    try {
-      // Call the ssweb function to get the screenshot
-      let screenshotResult = await ssweb(match);
-
-      // Check if the screenshot generation was successful
-      if (screenshotResult && screenshotResult.status === 200) {
-        // Send the image buffer directly to the user
-        return await message.sendMessage(
-          message.jid,
-          screenshotResult.result,  // This is the image buffer from the ssweb function
-          {
-            mimetype: "image/jpeg",  // Ensures the bot sends the correct format
-            caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Screenshot Generated",
-          },
-          "image"
-        );
-      } else {
-        return await message.sendMessage(message.jid, "No response from server!");
-      }
-    } catch (error) {
-      console.error(error);
-      return await message.sendMessage(message.jid, "Failed to generate screenshot.");
-    }
-  }
-);
-
-// Function for capturing a website screenshot
-let ssweb = (url, device = "desktop") => {
-  return new Promise((resolve, reject) => {
-    const screenshotAPI = "https://www.screenshotmachine.com";
-    const postData = {
-      url: url,
-      device: device,
-      cacheLimit: 0
-    };
-    axios({
-      url: screenshotAPI + "/capture.php",
-      method: "POST",
-      data: new URLSearchParams(Object.entries(postData)),
-      headers: {
-        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
-      }
-    }).then(response => {
-      const cookies = response.headers["set-cookie"];
-      if (response.data.status === "success") {
-        axios.get(screenshotAPI + "/" + response.data.link, {
-          headers: {
-            cookie: cookies.join("")
-          },
-          responseType: "arraybuffer"  // Download as an image buffer
-        }).then(({ data }) => {
-          const result = {
-            status: 200,
-            result: data  // Image buffer
-          };
-          resolve(result);
-        });
-      } else {
-        reject({
-          status: 404,
-          statuses: "Link Error",
-          message: response.data
-        });
-      }
-    }).catch(reject);
-  });
-};
 command(
   {
     pattern: "ghiblianime",
