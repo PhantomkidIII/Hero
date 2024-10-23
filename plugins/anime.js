@@ -126,7 +126,7 @@ cmdnames.forEach((cmdname) => {
   command(
     {
       pattern: cmdname,
-      fromMe: isPrivate,
+      fromMe: true,
       desc: `Fetch ${cmdname} image`,
       type: "anime",
     },
@@ -164,3 +164,74 @@ cmdnames.forEach((cmdname) => {
     }
   );
 });
+command(
+  {
+    pattern: "anisearch",  // Accepts text input for searching anime
+    fromMe: isPrivate,
+    desc: "Fetch anime details",
+    type: "anime",
+  },
+  async (message, match) => {
+    try {
+      if (!match) {
+        return await message.sendMessage(message.jid, "Please provide an anime name to search.");
+      }
+
+      // Use the Kitsu API to search for anime based on user input
+      const searchQuery = encodeURIComponent(match.trim());
+      const apiUrl = `https://kitsu.io/api/edge/anime?filter[text]=${searchQuery}`;
+      const response = await fetch(apiUrl);
+
+      // Check if the API call was successful
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Parse the JSON response
+      const data = await response.json();
+      if (!data.data || data.data.length === 0) {
+        return await message.sendMessage(message.jid, "No anime found with that name.");
+      }
+
+      // Extract the first anime result
+      const anime = data.data[0].attributes;
+      const title = anime.canonicalTitle || "No title available";
+      const synopsis = anime.synopsis || "No synopsis available";
+      const posterImage = anime.posterImage ? anime.posterImage.original : null;
+
+      // Build the message with anime details
+      let messageText = `*Title:* ${title}\n\n`;
+      messageText += `*Synopsis:* ${synopsis}`;
+
+      // Send the message with optional poster image
+      if (posterImage) {
+        const imageResponse = await fetch(posterImage);
+        const buffer = await imageResponse.buffer();
+        const tempFilePath = path.join(__dirname, 'temp_anime_poster.jpg');
+
+        // Write the image to a temporary file
+        fs.writeFileSync(tempFilePath, buffer);
+
+        // Send the image along with the anime details
+        await message.sendMessage(
+          message.jid,
+          fs.readFileSync(tempFilePath),
+          {
+            mimetype: "image/jpeg",
+            caption: messageText,
+          },
+          "image"
+        );
+
+        // Delete the temporary file after sending
+        fs.unlinkSync(tempFilePath);
+      } else {
+        // If there's no poster image, just send the text message
+        await message.sendMessage(message.jid, messageText);
+      }
+    } catch (error) {
+      console.error(error);
+      return await message.sendMessage(message.jid, "Failed to fetch anime details.");
+    }
+  }
+);
