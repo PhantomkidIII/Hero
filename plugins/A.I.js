@@ -815,22 +815,16 @@ command(
     match = match || message.reply_message.text;
     if (!match) return await message.sendMessage(message.jid, "Provide me a valid URL");
 
-    // Regular expression to validate URL
-    const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9.-]+)(:[0-9]{1,5})?(\/.*)?$/;
-    if (!urlPattern.test(match)) {
-      return await message.sendMessage(message.jid, "Invalid URL format.");
-    }
-
     // Ensure the URL starts with http:// or https://
     if (!match.startsWith("http://") && !match.startsWith("https://")) {
       match = "https://" + match;
     }
 
     try {
-      // Generate the image URL
+      // Generate the screenshot URL using the provided link
       const apiUrl = `https://image.thum.io/get/fullpage/${encodeURIComponent(match)}`;
-      
-      // Fetch the image directly from the URL
+
+      // Fetch the image from the URL
       const response = await fetch(apiUrl);
 
       // Check if the response is successful
@@ -846,8 +840,8 @@ command(
         message.jid,
         imageBuffer,
         {
-          mimetype: "image/jpeg",
-          caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Image Generated",
+          mimetype: "image/jpeg",  // Ensures the bot sends the correct format
+          caption: "𝐍𝐄𝐗𝐔𝐒-𝐁𝐎𝐓 Screenshot Generated",
         },
         "image"
       );
