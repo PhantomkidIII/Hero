@@ -813,10 +813,21 @@ command(
   },
   async (message, match) => {
     match = match || message.reply_message.text;
-    if (!match) return await message.sendMessage(message.jid, "Provide me a link");
+    if (!match) return await message.sendMessage(message.jid, "Provide me a valid URL");
+
+    // Regular expression to validate URL
+    const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9.-]+)(:[0-9]{1,5})?(\/.*)?$/;
+    if (!urlPattern.test(match)) {
+      return await message.sendMessage(message.jid, "Invalid URL format.");
+    }
+
+    // Ensure the URL starts with http:// or https://
+    if (!match.startsWith("http://") && !match.startsWith("https://")) {
+      match = "https://" + match;
+    }
 
     try {
-      // Generate the image URL using the provided template
+      // Generate the image URL
       const apiUrl = `https://image.thum.io/get/fullpage/${encodeURIComponent(match)}`;
       
       // Fetch the image directly from the URL
