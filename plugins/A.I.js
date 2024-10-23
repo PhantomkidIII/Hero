@@ -1054,7 +1054,7 @@ command(
   },
   async (message, match) => {
     match = match || message.reply_message.text;
-    if (!match) return await message.sendMessage(message.jid, "Provide a manga title and chapter number, e.g., flux One Piece chapter 1120");
+    if (!match) return await message.sendMessage(message.jid, "Provide a manga title and chapter number, e.g., manga One Piece chapter 1120");
 
     try {
       // Extract the manga title and chapter number from the input
@@ -1089,22 +1089,39 @@ command(
       console.log(`Fetching URL: ${chapterUrl}`);
 
       // Step 4: Use the ScreenshotMachine API to screenshot the manga chapter page
-      const screenshotUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(chapterUrl)}&dimension=1024x768`;
+      const apiUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(chapterUrl)}&dimension=1024x768`;
+      console.log(`Screenshot URL: ${apiUrl}`);
 
-      // Step 5: Send the screenshot to the user
-      await message.sendMessage(
-        message.jid,
-        { url: screenshotUrl },
-        {
-          mimetype: "image/jpeg",
-          caption: `Here is a screenshot from chapter ${chapterNumber} of "${mangaTitle}"`,
-        },
-        "image"
-      );
+      // Fetch the response from the API
+      const response = await fetch(apiUrl);
+
+      // Check for a successful response
+      if (!response.ok) {
+        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      }
+
+      // Get the content type of the response
+      const contentType = response.headers.get('content-type');
+
+      if (contentType && contentType.startsWith('image')) {
+        // If the response is an image, send it directly
+        const imageBuffer = await response.buffer(); // Get the image as a buffer
+        return await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: `Here is a screenshot from chapter ${chapterNumber} of "${mangaTitle}"`,
+          },
+          "image"
+        );
+      } else {
+        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      }
       
     } catch (error) {
       console.error("Error: ", error); // Log error for debugging
-      return await message.sendMessage(message.jid, `Error: ${error.message}\n\nCommand: flux\nFailed to fetch manga chapter.`);
+      return await message.sendMessage(message.jid, `Error: ${error.message}\n\nCommand: manga\nFailed to fetch manga chapter.`);
     }
   }
 );
