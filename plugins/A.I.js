@@ -1103,9 +1103,12 @@ command(
 
       // Step 4: Send all images to the user
       for (const [index, imgUrl] of imageUrls.entries()) {
+        const imageResponse = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+        const buffer = Buffer.from(imageResponse.data, 'binary');
+
         await message.sendMessage(
           message.jid,
-          { url: imgUrl },
+          buffer,
           {
             mimetype: "image/jpeg",
             caption: `Image ${index + 1} from chapter ${chapterNumber} of "${mangaTitle}"`,
