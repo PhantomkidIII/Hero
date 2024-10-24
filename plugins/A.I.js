@@ -1102,28 +1102,55 @@ command(
       // Step 5: Take screenshots for each page and send them to the user
       for (let pageIndex = 1; pageIndex <= pageCount; pageIndex++) {
         const pageUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}/page-${pageIndex}`;
-        const apiUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(pageUrl)}&dimension=1792x1024`; // Adjust dimension as needed
+        const apiUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(pageUrl)}&dimension=1792x1024`;
         console.log(`Screenshot URL: ${apiUrl}`);
 
-        // Fetch the screenshot from the API
-        const screenshotResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
+        // Fetch the response from the API
+        const response = await fetch(apiUrl);
 
         // Check for a successful response
-        if (screenshotResponse.status !== 200) {
-          return await message.sendMessage(message.jid, `Error: ${screenshotResponse.status} ${screenshotResponse.statusText}`);
+        if (!response.ok) {
+          return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
         }
 
-        // Send the screenshot image to the user
-        const imageBuffer = Buffer.from(screenshotResponse.data, 'binary'); // Convert response to buffer
-        await message.sendMessage(
-          message.jid,
-          imageBuffer,
-          {
-            mimetype: "image/jpeg",
-            caption: `Screenshot of page ${pageIndex} from chapter ${chapterNumber} of "${mangaTitle}"`,
-          },
-          "image"
-        );
+        // Get the content type of the response
+        const contentType = response.headers.get('content-type');
+
+        if (contentType && contentType.startsWith('image')) {
+          // If the response is an image, send it directly
+          const imageBuffer = await response.buffer(); // Get the image as a buffer
+          await message.sendMessage(
+            message.jid,
+            imageBuffer,
+            {
+              mimetype: "image/jpeg",
+              caption: `Screenshot of page ${pageIndex} from chapter ${chapterNumber} of "${mangaTitle}"`,
+            },
+            "image"
+          );
+        } else if (contentType && contentType.includes('application/json')) {
+          // If the response is JSON, parse it and get the image URL
+          const data = await response.json();
+          if (data.status !== 200) {
+            return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
+          }
+
+          const photoUrl = data.result;
+
+          // Send the photo URL to the user
+          await message.sendMessage(
+            message.jid,
+            { url: photoUrl },
+            {
+              mimetype: "image/jpeg",
+              caption: `Screenshot of page ${pageIndex} from chapter ${chapterNumber} of "${mangaTitle}"`,
+            },
+            "image"
+          );
+        } else {
+          // Handle unexpected content types
+          return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+        }
       }
 
     } catch (error) {
