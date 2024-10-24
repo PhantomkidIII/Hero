@@ -1093,64 +1093,30 @@ command(
       const chapterHtml = chapterResponse.data;
       const chapterPage = cheerio.load(chapterHtml);
 
-      // Find the total number of pages from the chapter page
-      const pageCount = chapterPage('.page-break').length; // Adjust the selector as necessary
-      if (pageCount === 0) {
-        return await message.sendMessage(message.jid, `No pages found for chapter ${chapterNumber} of "${mangaTitle}".`);
+      // Step 5: Extract all image URLs from the chapter
+      const imageUrls = [];
+      chapterPage('.container-chapter-reader img').each((index, element) => {
+        const imgUrl = chapterPage(element).attr('src');
+        if (imgUrl) {
+          imageUrls.push(imgUrl);
+        }
+      });
+
+      if (imageUrls.length === 0) {
+        return await message.sendMessage(message.jid, `No images found for chapter ${chapterNumber} of "${mangaTitle}".`);
       }
 
-      // Step 5: Take screenshots for each page and send them to the user
-      for (let pageIndex = 1; pageIndex <= pageCount; pageIndex++) {
-        const pageUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}/page-${pageIndex}`;
-        const apiUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(pageUrl)}&dimension=1792x1024`;
-        console.log(`Screenshot URL: ${apiUrl}`);
-
-        // Fetch the response from the API
-        const response = await fetch(apiUrl);
-
-        // Check for a successful response
-        if (!response.ok) {
-          return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
-        }
-
-        // Get the content type of the response
-        const contentType = response.headers.get('content-type');
-
-        if (contentType && contentType.startsWith('image')) {
-          // If the response is an image, send it directly
-          const imageBuffer = await response.buffer(); // Get the image as a buffer
-          await message.sendMessage(
-            message.jid,
-            imageBuffer,
-            {
-              mimetype: "image/jpeg",
-              caption: `Screenshot of page ${pageIndex} from chapter ${chapterNumber} of "${mangaTitle}"`,
-            },
-            "image"
-          );
-        } else if (contentType && contentType.includes('application/json')) {
-          // If the response is JSON, parse it and get the image URL
-          const data = await response.json();
-          if (data.status !== 200) {
-            return await message.sendMessage(message.jid, "An error occurred while fetching the data.");
-          }
-
-          const photoUrl = data.result;
-
-          // Send the photo URL to the user
-          await message.sendMessage(
-            message.jid,
-            { url: photoUrl },
-            {
-              mimetype: "image/jpeg",
-              caption: `Screenshot of page ${pageIndex} from chapter ${chapterNumber} of "${mangaTitle}"`,
-            },
-            "image"
-          );
-        } else {
-          // Handle unexpected content types
-          return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
-        }
+      // Step 6: Send all images to the user
+      for (const [index, imgUrl] of imageUrls.entries()) {
+        await message.sendMessage(
+          message.jid,
+          { url: imgUrl },
+          {
+            mimetype: "image/jpeg",
+            caption: `Image ${index + 1} from chapter ${chapterNumber} of "${mangaTitle}"`,
+          },
+          "image"
+        );
       }
 
     } catch (error) {
