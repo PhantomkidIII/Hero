@@ -1068,12 +1068,7 @@ command(
 
       // Step 1: Search for manga on MangaNato
       const searchUrl = `https://manganato.com/search/story/${encodeURIComponent(mangaTitle)}`;
-      const searchResponse = await axios.get(searchUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-          'Referer': 'https://manganato.com/',
-        },
-      });
+      const searchResponse = await axios.get(searchUrl);
       const searchHtml = searchResponse.data;
       const $ = cheerio.load(searchHtml);
 
@@ -1093,32 +1088,42 @@ command(
       const chapterUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}`;
       console.log(`Fetching URL: ${chapterUrl}`);
 
-      // Step 4: Scrape manga images from the chapter page
-      const chapterResponse = await axios.get(chapterUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-          'Referer': `https://chapmanganato.to/`,
-        },
-      });
+      // Step 4: Fetch the chapter page to determine the number of pages
+      const chapterResponse = await axios.get(chapterUrl);
       const chapterHtml = chapterResponse.data;
       const chapterPage = cheerio.load(chapterHtml);
 
-      // Extract all image URLs
-      const imageUrls = [];
-      chapterPage('img').each((i, img) => {
-        const imageUrl = chapterPage(img).attr('src');
-        if (imageUrl) {
-          imageUrls.push(imageUrl);
-        }
-      });
-
-      if (imageUrls.length === 0) {
-        return await message.sendMessage(message.jid, `No images found for chapter ${chapterNumber} of "${mangaTitle}".`);
+      // Find the total number of pages from the chapter page
+      const pageCount = chapterPage('.page-break').length; // Adjust the selector as necessary
+      if (pageCount === 0) {
+        return await message.sendMessage(message.jid, `No pages found for chapter ${chapterNumber} of "${mangaTitle}".`);
       }
 
-      // Step 5: Send each image to the user
-      for (const imageUrl of imageUrls) {
-        await message.sendMessage(message.jid, imageUrl, { mimetype: "image/jpeg" }, "image");
+      // Step 5: Take screenshots for each page and send them to the user
+      for (let pageIndex = 1; pageIndex <= pageCount; pageIndex++) {
+        const pageUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}/page-${pageIndex}`;
+        const apiUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(pageUrl)}&dimension=1792x1024`; // Adjust dimension as needed
+        console.log(`Screenshot URL: ${apiUrl}`);
+
+        // Fetch the screenshot from the API
+        const screenshotResponse = await axios.get(apiUrl, { responseType: 'arraybuffer' });
+
+        // Check for a successful response
+        if (screenshotResponse.status !== 200) {
+          return await message.sendMessage(message.jid, `Error: ${screenshotResponse.status} ${screenshotResponse.statusText}`);
+        }
+
+        // Send the screenshot image to the user
+        const imageBuffer = Buffer.from(screenshotResponse.data, 'binary'); // Convert response to buffer
+        await message.sendMessage(
+          message.jid,
+          imageBuffer,
+          {
+            mimetype: "image/jpeg",
+            caption: `Screenshot of page ${pageIndex} from chapter ${chapterNumber} of "${mangaTitle}"`,
+          },
+          "image"
+        );
       }
 
     } catch (error) {
