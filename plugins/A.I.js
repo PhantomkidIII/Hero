@@ -1088,15 +1088,15 @@ command(
       const chapterUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}`;
       console.log(`Fetching URL: ${chapterUrl}`);
 
-      // Step 4: Fetch the chapter page to determine the number of pages
+      // Step 4: Fetch the chapter page directly from the MangaNato site
       const chapterResponse = await axios.get(chapterUrl);
       const chapterHtml = chapterResponse.data;
       const chapterPage = cheerio.load(chapterHtml);
 
-      // Step 5: Extract all image URLs from the chapter
+      // Step 5: Extract all image URLs from the chapter page using data-src
       const imageUrls = [];
       chapterPage('.container-chapter-reader img').each((index, element) => {
-        const imgUrl = chapterPage(element).attr('src');
+        const imgUrl = chapterPage(element).attr('data-src'); // Use data-src for lazy-loaded images
         if (imgUrl) {
           imageUrls.push(imgUrl);
         }
