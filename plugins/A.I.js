@@ -47,53 +47,6 @@ command(
     }
   }
 );
-const apiKeyPart1 = 'sk-proj-4nHlXNJbIG8Xp9u8MNFE-XjM6fe--Lneun7-';
-const apiKeyPart2 = '3iTcSARDRjuzsg5nrUf5p59Bge2_dHF7zLekI1T3BlbkFJUUkvfavaeM579_klUJ_u6NJDL5V5ZIGEYKSnq9XvIAzbdmlKU_uI3SijEHR_YCkVUO0fGRljUA';
-const OPENAI_API_KEY = apiKeyPart1 + apiKeyPart2;  // Combine the two parts
-
-command(
-  {
-    pattern: "openai",
-    fromMe: isPrivate,
-    desc: "Ask OpenAI anything.",
-    type: "ai",
-  },
-  async (message, match) => {
-    try {
-      // Extract the query from the message
-      const query = match ? match.trim() : null;
-      if (!query) {
-        return await message.reply("Please provide a query, e.g., `.openai What is life?`.");
-      }
-
-      // Define the OpenAI API Endpoint
-      const apiUrl = 'https://api.openai.com/v1/completions';
-
-      // Make the request to OpenAI API
-      const response = await axios.post(apiUrl, {
-        model: 'text-davinci-003',  // Choose your model here
-        prompt: query,
-        max_tokens: 150,
-        temperature: 0.7,
-      }, {
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Check if the API response is successful
-      const resultText = response.data.choices[0].text.trim(); // Extract the response
-
-      // Send the final response
-      await message.reply(`*Response:* \n\n${resultText}`);
-    } catch (error) {
-      // Handle any errors
-      await message.reply(`Failed to get a response. Error: ${error.message}`);
-      console.error("Error fetching AI response:", error);
-    }
-  }
-);
 command(
   {
     pattern: "gpt",
@@ -1115,7 +1068,12 @@ command(
 
       // Step 1: Search for manga on MangaNato
       const searchUrl = `https://manganato.com/search/story/${encodeURIComponent(mangaTitle)}`;
-      const searchResponse = await axios.get(searchUrl);
+      const searchResponse = await axios.get(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+          'Referer': 'https://manganato.com/',
+        },
+      });
       const searchHtml = searchResponse.data;
       const $ = cheerio.load(searchHtml);
 
@@ -1136,7 +1094,12 @@ command(
       console.log(`Fetching URL: ${chapterUrl}`);
 
       // Step 4: Scrape manga images from the chapter page
-      const chapterResponse = await axios.get(chapterUrl);
+      const chapterResponse = await axios.get(chapterUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+          'Referer': `https://chapmanganato.to/`,
+        },
+      });
       const chapterHtml = chapterResponse.data;
       const chapterPage = cheerio.load(chapterHtml);
 
