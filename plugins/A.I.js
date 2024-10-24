@@ -1107,7 +1107,7 @@ command(
       // Extract the manga title and chapter number from the input
       const queryMatch = match.match(/(.+?)\s+chapter\s+(\d+)/i);
       if (!queryMatch) {
-        return await message.sendMessage(message.jid, "Invalid query format. Use: flux <manga title> chapter <number>");
+        return await message.sendMessage(message.jid, "Invalid query format. Use: manga <title> chapter <number>");
       }
 
       const mangaTitle = queryMatch[1].trim().replace(/\s+/g, '_').toLowerCase(); // Format for URL
@@ -1135,37 +1135,29 @@ command(
       const chapterUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}`;
       console.log(`Fetching URL: ${chapterUrl}`);
 
-      // Step 4: Use the ScreenshotMachine API to screenshot the manga chapter page
-      const apiUrl = `https://api.screenshotmachine.com/?key=d11d36&url=${encodeURIComponent(chapterUrl)}&dimension=1024x768`;
-      console.log(`Screenshot URL: ${apiUrl}`);
+      // Step 4: Scrape manga images from the chapter page
+      const chapterResponse = await axios.get(chapterUrl);
+      const chapterHtml = chapterResponse.data;
+      const chapterPage = cheerio.load(chapterHtml);
 
-      // Fetch the response from the API
-      const response = await fetch(apiUrl);
+      // Extract all image URLs
+      const imageUrls = [];
+      chapterPage('img').each((i, img) => {
+        const imageUrl = chapterPage(img).attr('src');
+        if (imageUrl) {
+          imageUrls.push(imageUrl);
+        }
+      });
 
-      // Check for a successful response
-      if (!response.ok) {
-        return await message.sendMessage(message.jid, `Error: ${response.status} ${response.statusText}`);
+      if (imageUrls.length === 0) {
+        return await message.sendMessage(message.jid, `No images found for chapter ${chapterNumber} of "${mangaTitle}".`);
       }
 
-      // Get the content type of the response
-      const contentType = response.headers.get('content-type');
-
-      if (contentType && contentType.startsWith('image')) {
-        // If the response is an image, send it directly
-        const imageBuffer = await response.buffer(); // Get the image as a buffer
-        return await message.sendMessage(
-          message.jid,
-          imageBuffer,
-          {
-            mimetype: "image/jpeg",
-            caption: `Here is a screenshot from chapter ${chapterNumber} of "${mangaTitle}"`,
-          },
-          "image"
-        );
-      } else {
-        return await message.sendMessage(message.jid, "Unexpected content type received from the API.");
+      // Step 5: Send each image to the user
+      for (const imageUrl of imageUrls) {
+        await message.sendMessage(message.jid, imageUrl, { mimetype: "image/jpeg" }, "image");
       }
-      
+
     } catch (error) {
       console.error("Error: ", error); // Log error for debugging
       return await message.sendMessage(message.jid, `Error: ${error.message}\n\nCommand: manga\nFailed to fetch manga chapter.`);
