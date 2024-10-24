@@ -1049,7 +1049,7 @@ command(
   {
     pattern: "manga",
     fromMe: isPrivate,
-    desc: "Generate manga chapter images from MangaNato",
+    desc: "Generate manga chapter images from MangaDex (English only)",
     type: "anime",
   },
   async (message, match) => {
@@ -1063,50 +1063,45 @@ command(
         return await message.sendMessage(message.jid, "Invalid query format. Use: manga <title> chapter <number>");
       }
 
-      const mangaTitle = queryMatch[1].trim().replace(/\s+/g, '_').toLowerCase(); // Format for URL
+      const mangaTitle = queryMatch[1].trim();
       const chapterNumber = queryMatch[2];
 
-      // Step 1: Search for manga on MangaNato
-      const searchUrl = `https://manganato.com/search/story/${encodeURIComponent(mangaTitle)}`;
-      const searchResponse = await axios.get(searchUrl);
-      const searchHtml = searchResponse.data;
-      const $ = cheerio.load(searchHtml);
+      // Step 1: Search for manga on MangaDex (filtered to English)
+      const mangaSearchUrl = `https://api.mangadex.org/manga?title=${encodeURIComponent(mangaTitle)}&limit=1&availableTranslatedLanguage[]=en`;
+      const searchResponse = await axios.get(mangaSearchUrl);
 
-      // Step 2: Get the first manga result and its ID
-      const firstMangaLink = $('a.item-title').first().attr('href');
-      if (!firstMangaLink) {
-        return await message.sendMessage(message.jid, `No manga found with the title "${mangaTitle}".`);
+      if (!searchResponse.data || !searchResponse.data.data || searchResponse.data.data.length === 0) {
+        return await message.sendMessage(message.jid, `No English manga found with the title "${mangaTitle}".`);
       }
 
-      const mangaIdMatch = firstMangaLink.match(/manga-([a-zA-Z0-9]+)/);
-      if (!mangaIdMatch) {
-        return await message.sendMessage(message.jid, "Error: Could not extract manga ID.");
+      const mangaId = searchResponse.data.data[0].id;
+
+      // Step 2: Get the chapters of the manga, filtering by chapter number and English
+      const chaptersUrl = `https://api.mangadex.org/chapter?manga=${mangaId}&chapter=${chapterNumber}&translatedLanguage[]=en`;
+      const chaptersResponse = await axios.get(chaptersUrl);
+
+      if (!chaptersResponse.data || chaptersResponse.data.data.length === 0) {
+        return await message.sendMessage(message.jid, `No English chapter ${chapterNumber} found for "${mangaTitle}".`);
       }
-      const mangaId = mangaIdMatch[0]; // Example: 'manga-aa951409'
 
-      // Step 3: Construct the chapter URL
-      const chapterUrl = `https://chapmanganato.to/${mangaId}/chapter-${chapterNumber}`;
-      console.log(`Fetching URL: ${chapterUrl}`);
+      // Step 3: Get the first available chapter's ID and download it
+      const chapterId = chaptersResponse.data.data[0].id;
+      const chapterApiUrl = `https://api.mangadex.org/at-home/server/${chapterId}`;
+      const chapterResponse = await axios.get(chapterApiUrl);
 
-      // Step 4: Fetch the chapter page directly from the MangaNato site
-      const chapterResponse = await axios.get(chapterUrl);
-      const chapterHtml = chapterResponse.data;
-      const chapterPage = cheerio.load(chapterHtml);
+      if (!chapterResponse.data || !chapterResponse.data.baseUrl) {
+        return await message.sendMessage(message.jid, "Error: Unable to fetch the chapter.");
+      }
 
-      // Step 5: Extract all image URLs from the chapter page using data-src
-      const imageUrls = [];
-      chapterPage('.container-chapter-reader img').each((index, element) => {
-        const imgUrl = chapterPage(element).attr('data-src'); // Use data-src for lazy-loaded images
-        if (imgUrl) {
-          imageUrls.push(imgUrl);
-        }
-      });
+      const imageUrls = chapterResponse.data.chapter.data.map(
+        (imageFileName) => `${chapterResponse.data.baseUrl}/data/${chapterResponse.data.chapter.hash}/${imageFileName}`
+      );
 
       if (imageUrls.length === 0) {
         return await message.sendMessage(message.jid, `No images found for chapter ${chapterNumber} of "${mangaTitle}".`);
       }
 
-      // Step 6: Send all images to the user
+      // Step 4: Send all images to the user
       for (const [index, imgUrl] of imageUrls.entries()) {
         await message.sendMessage(
           message.jid,
